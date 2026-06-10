@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>物理实验助手 v2.3.2</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="stylesheet" href="css/style.css?v=20250609">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><img src="images/logo.png" class="site-logo" alt="logo">物理实验助手 v2.3.2</h1>
+            <div class="header-center-group">
+                <span class="device-status" id="deviceStatus">
+                    <span class="status-dot" id="deviceDot"></span>
+                    <span class="status-text" id="deviceStatusText">终端未连接</span>
+                </span>
+                <button id="connectionStatus" class="connect-btn">检测终端</button>
+            </div>
+            <div class="header-right-group">
+                <button id="themeToggle" class="theme-toggle-btn" title="切换深色/浅色模式">🌙</button>
+                <button id="changelogBtn" class="changelog-btn" title="查看开发日志">📋 日志</button>
+                <button id="adminBtn" class="admin-btn" title="管理后台">⚙️ 管理</button>
+                <button id="feedbackBtn" class="feedback-btn" title="用户反馈">💬 反馈</button>
+            </div>
+        </header>
+        
+        <main class="two-panel-layout">
+            <!-- Left side: AI Assistant area -->
+            <section class="ai-assistant-panel" id="aiAssistantPanel">
+                <div class="panel-header">
+                    <h2>AI 实验助手</h2>
+                    <p class="panel-subtitle">DeepSeek 驱动 · 会话记忆</p>
+                    <div class="mobile-actions-bar" id="mobileActionsBar">
+                        <button class="control-btn-mock" id="mobileSimulateBtn">模拟数据</button>
+                        <button class="control-btn-mock" id="mobileClearBtn">清空</button>
+                    </div>
+                </div>
+                <div class="quick-actions" id="quickActions">
+                    <button class="quick-action-btn" data-msg="开始物理特性推导">🔬 物理推导</button>
+                    <button class="quick-action-btn" data-msg="结题报告">📄 结题报告</button>
+                    <button class="quick-action-btn" data-msg="解释电导率计算方法">⚡ 电导率计算</button>
+                    <button class="quick-action-btn" data-msg="数据异常分析">⚠️ 数据分析</button>
+                </div>
+                <div class="chat-container" id="chatContainer">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="typing-indicator" id="typingIndicator" style="display:none;">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="message ai-message">
+                            <p>你好！我是你的物理实验助手。我可以帮助你分析实验数据、生成实验报告，并提供关于材料性质的见解。请开始实验或提出你的问题。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="userInput" placeholder="输入你的问题或实验报告内容..." />
+                    <button id="sendMessageBtn">发送</button>
+                </div>
+            </section>
+            
+            <!-- Resizable Split Bar -->
+            <div class="panel-resizer" id="panelResizer"></div>
+            
+            <!-- Right side: Real-time image and physics variables area -->
+            <section class="data-visualization-panel" id="dataVizPanel">
+                <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;">
+                    <h2 style="flex:1;text-align:center;">实验数据可视化</h2>
+                    <div class="chart-selector">
+                        <button class="chart-toggle-btn" id="chartToggleBtn">📈 图表配置</button>
+                        <div class="chart-dropdown" id="chartDropdown">
+                            <label class="chart-dropdown-item">
+                                <input type="checkbox" data-chart="acceleration" checked>
+                                <span class="check-box"></span>
+                                <span>加速度-时间 (a-t)</span>
+                                <span class="chart-color-dot" style="background:#e74c3c"></span>
+                            </label>
+                            <label class="chart-dropdown-item">
+                                <input type="checkbox" data-chart="energy" checked>
+                                <span class="check-box"></span>
+                                <span>能量分布（饼图）</span>
+                                <span class="chart-color-dot" style="background:#f39c12"></span>
+                            </label>
+                            <label class="chart-dropdown-item">
+                                <input type="checkbox" data-chart="energyBar" checked>
+                                <span class="check-box"></span>
+                                <span>能量柱状图</span>
+                                <span class="chart-color-dot" style="background:#e67e22"></span>
+                            </label>
+                            <label class="chart-dropdown-item">
+                                <input type="checkbox" data-chart="displacement">
+                                <span class="check-box"></span>
+                                <span>位移-时间 (s-t)</span>
+                                <span class="chart-color-dot" style="background:#3498db"></span>
+                            </label>
+                            <label class="chart-dropdown-item">
+                                <input type="checkbox" data-chart="velocity">
+                                <span class="check-box"></span>
+                                <span>速度-时间 (v-t)</span>
+                                <span class="chart-color-dot" style="background:#2ecc71"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Simulated data hint (shown when device is disconnected) -->
+                <div class="sim-hint-banner" id="simHintBanner">
+                    <span class="hint-icon">💡</span>
+                    <span class="hint-text">终端尚未连接？您可以直接使用模拟数据体验完整功能</span>
+                    <span class="hint-arrow">↓</span>
+                </div>
+
+                <!-- Start experiment button -->
+                <div class="control-panel">
+                    <label class="angle-selector">
+                        <span>斜面角度：</span>
+                        <select id="angleSelect">
+                            <option value="15">15°</option>
+                            <option value="20">20°</option>
+                            <option value="25">25°</option>
+                            <option value="30" selected>30°</option>
+                            <option value="35">35°</option>
+                            <option value="40">40°</option>
+                            <option value="45">45°</option>
+                        </select>
+                    </label>
+                    <button id="startExperimentBtn">开始实验</button>
+                    <button id="stopExperimentBtn" disabled>停止实验</button>
+                    <button id="simulateDataBtn">使用标准数据模拟</button>
+                    <button id="clearDataBtn">清空数据</button>
+                    <button id="viewMetalBtn" class="metal-info-btn">🔍 金属性质</button>
+                    <button id="exportExcelBtn" class="export-btn">📥 导出Excel</button>
+                </div>
+                
+                <!-- Real-time displacement and time display -->
+                <div class="real-time-data">
+                    <div class="data-item">
+                        <span class="data-label">位移 (mm):</span>
+                        <span class="data-value" id="displacementValue">0.00</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">时间 (s):</span>
+                        <span class="data-value" id="timeValue">0.00</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">速度 (mm/s):</span>
+                        <span class="data-value" id="velocityValue">0.00</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">加速度 (mm/s²):</span>
+                        <span class="data-value" id="accelerationValue">0.00</span>
+                    </div>
+                </div>
+                
+                <!-- Dynamic charts container -->
+                <div class="charts-container" id="mainVizContent">
+                    <div class="chart-item chart-item-displacement">
+                        <canvas id="displacementChart"></canvas>
+                        <p class="chart-label">位移-时间</p>
+                    </div>
+                    <div class="chart-item chart-item-velocity">
+                        <canvas id="velocityChart"></canvas>
+                        <p class="chart-label">速度-时间</p>
+                    </div>
+                    <div class="chart-item chart-item-acceleration">
+                        <canvas id="accelerationChart"></canvas>
+                        <p class="chart-label">加速度-时间</p>
+                    </div>
+                    <div class="chart-item chart-item-energy energy-chart">
+                        <canvas id="energyPieChart"></canvas>
+                        <p class="chart-label">能量分布（重力势能 · 动能 · 内能）</p>
+                    </div>
+                    <div class="chart-item chart-item-energybar energy-chart">
+                        <canvas id="energyBarChart"></canvas>
+                        <p class="chart-label">势能 vs 动能（焦耳）</p>
+                    </div>
+                </div>
+
+                <!-- Metal Properties Panel -->
+                <div class="metals-info-panel" id="metalsInfoPanel">
+                    <div class="metals-header">
+                        <h2>🔍 常见金属电阻率及性质</h2>
+                        <button id="metalsBackBtn" class="metals-back-btn">← 返回实验面板</button>
+                    </div>
+                    <p class="metals-intro">以下为实验系统中常用的金属导体参考数据，用于电导率计算与材质匹配对比。<strong>💡 点击任意金属卡片即可查看更详细的物理、力学及用途信息。</strong></p>
+                    <div class="metals-grid">
+                        <div class="metal-card metal-copper">
+                            <div class="metal-name">铜 <span>Cu</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>1.68×10⁻⁸ Ω·m</b></div>
+                                <div><span>电导率</span><b>5.96×10⁷ S/m</b></div>
+                                <div><span>密度</span><b>8.96 g/cm³</b></div>
+                                <div><span>熔点</span><b>1085 °C</b></div>
+                            </div>
+                        </div>
+                        <div class="metal-card metal-aluminum">
+                            <div class="metal-name">铝 <span>Al</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>2.65×10⁻⁸ Ω·m</b></div>
+                                <div><span>电导率</span><b>3.50×10⁷ S/m</b></div>
+                                <div><span>密度</span><b>2.70 g/cm³</b></div>
+                                <div><span>熔点</span><b>660 °C</b></div>
+                            </div>
+                        </div>
+                        <div class="metal-card metal-silver">
+                            <div class="metal-name">银 <span>Ag</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>1.59×10⁻⁸ Ω·m</b></div>
+                                <div><span>电导率</span><b>6.30×10⁷ S/m</b></div>
+                                <div><span>密度</span><b>10.49 g/cm³</b></div>
+                                <div><span>熔点</span><b>961 °C</b></div>
+                            </div>
+                        </div>
+                        <div class="metal-card metal-gold">
+                            <div class="metal-name">金 <span>Au</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>2.44×10⁻⁸ Ω·m</b></div>
+                                <div><span>电导率</span><b>4.10×10⁷ S/m</b></div>
+                                <div><span>密度</span><b>19.32 g/cm³</b></div>
+                                <div><span>熔点</span><b>1064 °C</b></div>
+                            </div>
+                        </div>
+                        <div class="metal-card metal-iron">
+                            <div class="metal-name">铁 <span>Fe</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>9.71×10⁻⁸ Ω·m</b></div>
+                                <div><span>电导率</span><b>1.03×10⁷ S/m</b></div>
+                                <div><span>密度</span><b>7.87 g/cm³</b></div>
+                                <div><span>熔点</span><b>1538 °C</b></div>
+                            </div>
+                        </div>
+                        <div class="metal-card metal-steel">
+                            <div class="metal-name">不锈钢 304 <span>SS</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>6.90×10⁻⁷ Ω·m</b></div>
+                                <div><span>电导率</span><b>1.45×10⁶ S/m</b></div>
+                                <div><span>密度</span><b>7.93 g/cm³</b></div>
+                                <div><span>熔点</span><b>1400 °C</b></div>
+                            </div>
+                        </div>
+                        <div class="metal-card metal-nickel">
+                            <div class="metal-name">镍 <span>Ni</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>6.99×10⁻⁸ Ω·m</b></div>
+                                <div><span>电导率</span><b>1.43×10⁷ S/m</b></div>
+                                <div><span>密度</span><b>8.91 g/cm³</b></div>
+                                <div><span>熔点</span><b>1455 °C</b></div>
+                            </div>
+                        </div>
+                        <div class="metal-card metal-zinc">
+                            <div class="metal-name">锌 <span>Zn</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>5.90×10⁻⁸ Ω·m</b></div>
+                                <div><span>电导率</span><b>1.69×10⁷ S/m</b></div>
+                                <div><span>密度</span><b>7.14 g/cm³</b></div>
+                                <div><span>熔点</span><b>419 °C</b></div>
+                            </div>
+                        </div>
+                        <div class="metal-card metal-tin">
+                            <div class="metal-name">锡 <span>Sn</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>1.15×10⁻⁷ Ω·m</b></div>
+                                <div><span>电导率</span><b>8.69×10⁶ S/m</b></div>
+                                <div><span>密度</span><b>7.31 g/cm³</b></div>
+                                <div><span>熔点</span><b>231 °C</b></div>
+                            </div>
+                        </div>
+                        <div class="metal-card metal-lead">
+                            <div class="metal-name">铅 <span>Pb</span></div>
+                            <div class="metal-props">
+                                <div><span>电阻率</span><b>2.20×10⁻⁷ Ω·m</b></div>
+                                <div><span>电导率</span><b>4.55×10⁶ S/m</b></div>
+                                <div><span>密度</span><b>11.34 g/cm³</b></div>
+                                <div><span>熔点</span><b>327 °C</b></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <div class="footer-info">
+                <p>物理实验助手 v2.3.2 | 使用 DeepSeek AI 和 ESP8266 物联网技术</p>
+                <p>通过 cpolar 内网穿透工具提供远程访问</p>
+            </div>
+        </footer>
+
+        <!-- Feedback Modal -->
+        <div class="modal-overlay" id="feedbackModal">
+            <div class="modal-content feedback-modal-content">
+                <div class="modal-header">
+                    <h2>💬 用户反馈</h2>
+                    <button class="modal-close" id="feedbackClose">&times;</button>
+                </div>
+                <div class="modal-body feedback-body">
+                    <p class="feedback-intro">感谢您使用物理实验助手！如有任何建议、问题或功能需求，请在此留言。</p>
+                    <textarea id="feedbackContent" class="feedback-textarea" placeholder="请输入您的反馈内容..." rows="5"></textarea>
+                    <input type="text" id="feedbackContact" class="feedback-contact" placeholder="联系方式（选填，如邮箱/QQ）">
+                    <p class="feedback-result" id="feedbackResult"></p>
+                </div>
+                <div class="feedback-footer">
+                    <button id="feedbackSubmitBtn" class="feedback-submit-btn">📨 提交反馈</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metal Detail Modal -->
+        <div class="modal-overlay" id="metalDetailModal">
+            <div class="modal-content metal-detail-content">
+                <div class="modal-header">
+                    <h2 id="metalDetailTitle">🔍 金属详情</h2>
+                    <button class="modal-close" id="metalDetailClose">&times;</button>
+                </div>
+                <div class="modal-body metal-detail-body" id="metalDetailBody">
+                </div>
+                <div class="metal-detail-footer">
+                    <button id="exportWordBtn" class="export-word-btn">📄 导出到 Word 文档</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Changelog Modal -->
+        <div class="modal-overlay" id="changelogModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>📋 开发日志</h2>
+                    <button class="modal-close" id="changelogClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="changelog-entry v232">
+                        <h3>v2.3.2 — 2026-06-09</h3>
+                        <ul>
+                            <li>🔒 <strong>安全加固</strong>：全面修复安全审计报告中的11项漏洞</li>
+                            <li>🛡 H2 数据库控制台已禁用，数据库添加强密码保护（V-02）</li>
+                            <li>🔐 密码爆破防护大幅增强：3次错误即锁定15分钟，重复锁定递增至最高60分钟（V-07）</li>
+                            <li>🧹 反馈提交服务端 XSS 过滤：自动清除 script/iframe/事件注入等恶意标签（V-05）</li>
+                            <li>🔇 关闭 Spring Boot 错误详情暴露，防止框架信息泄露（V-09）</li>
+                            <li>🛡 添加安全响应头：X-Frame-Options、CSP、X-Content-Type-Options 等（V-10）</li>
+                            <li>🤖 AI 会话历史接口过滤系统提示词，防止 Prompt 泄露（V-11）</li>
+                            <li>🔑 管理后台所有删除操作统一密码验证（V-04）</li>
+                            <li>📏 反馈内容长度限制（5000字），防止滥用</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-entry v231">
+                        <h3>v2.3.1 — 2026-06-07</h3>
+                        <ul>
+                            <li>🎨 导航栏布局优化：终端状态和检测按钮独立为一组，与功能按钮分离，视觉更整洁</li>
+                            <li>📐 按钮之间增加合理间距，避免挤在一起的拥挤感</li>
+                            <li>🕐 管理后台时间格式优化：访问时间、反馈时间统一显示为「年-月-日 时:分:秒」格式</li>
+                            <li>📱 移动端同步适配新的分组布局</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-entry v23">
+                        <h3>v2.3.0 — 2026-06-07</h3>
+                        <ul>
+                            <li>⚙️ 新增「管理后台」功能入口：顶部导航栏新增管理按钮</li>
+                            <li>📊 独立管理后台页面（/admin.html），密码验证后进入</li>
+                            <li>📈 自动统计页面访问次数：每次打开主页浏览次数 +1</li>
+                            <li>🖥 记录屏幕分辨率、语言偏好、来源网址</li>
+                            <li>🗑 每条记录附带删除按钮，管理员可自由清理记录</li>
+                            <li>💾 访问记录持久化存储于 H2 数据库</li>
+                            <li>🌙 管理后台同步支持深色/浅色模式</li>
+                            <li>💬 新增用户反馈功能：顶部导航栏新增反馈按钮</li>
+                            <li>📝 反馈弹窗支持填写反馈内容和联系方式（选填）</li>
+                            <li>📊 管理后台新增「用户反馈」标签页，可查看所有用户反馈</li>
+                            <li>🗑 支持管理员删除反馈记录</li>
+                            <li>📱 反馈弹窗适配移动端响应式布局</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-entry v22">
+                        <h3>v2.2.0 — 2026-06-06</h3>
+                        <ul>
+                            <li>🔍 新增常见金属电阻率及性质资料库（铜/铝/银/金/铁/不锈钢/镍/锌/锡/铅共10种）</li>
+                            <li>🖱 金属卡片交互升级：点击卡片弹出详细性质弹窗，展示四大类属性</li>
+                            <li>⚡ 电学性质：电阻率、电导率</li>
+                            <li>🪨 物理性质：密度、熔点、沸点、导热系数</li>
+                            <li>🛠 力学性质：杨氏模量、抗拉强度、晶体结构、磁性</li>
+                            <li>💡 附带各金属常见用途的中文详细说明</li>
+                            <li>📄 弹窗底部「导出到 Word 文档」按钮，一键生成 .doc 格式报告</li>
+                            <li>📱 金属面板及弹窗全面适配移动端响应式布局</li>
+                            <li>🐛 修复多项 Bug：JS 缓存版本管理、页面刷新自动清空、模拟报告材质修正</li>
+                            <li>🎨 深色模式全组件覆盖（金属面板、详情弹窗、导出按钮）</li>
+                            <li>🎯 新增项目 Logo：浏览器标签页 Favicon + 页面标题前展示</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-entry v2">
+                        <h3>v2.0.0 — 2026-06-05</h3>
+                        <ul>
+                            <li>🎨 全新 UI 设计：蓝紫渐变背景 + 毛玻璃面板效果</li>
+                            <li>🌙 新增深色/浅色模式切换</li>
+                            <li>🔬 新增多角度斜面支持（15°-45°）</li>
+                            <li>📊 图表展示优化（扁平布局，支持图表配置切换）</li>
+                            <li>⚡ AI 快捷提问按钮（物理推导、结题报告、电导率计算、数据分析）</li>
+                            <li>📥 实验数据导出为 Excel 文件</li>
+                            <li>💾 实验历史记录持久化存储（H2 数据库）</li>
+                            <li>📱 移动端全面适配（毛玻璃效果、触屏优化）</li>
+                            <li>🔒 凭据安全加固（环境变量配置）</li>
+                            <li>⏳ AI 回复加载动画优化</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-entry v1">
+                        <h3>v1.0.0 — 2026-05-20</h3>
+                        <ul>
+                            <li>🎯 初始版本发布</li>
+                            <li>🤖 DeepSeek AI 物理实验助手</li>
+                            <li>📡 ESP8266 激光测距传感器数据采集</li>
+                            <li>📈 Chart.js 实时数据可视化（5种图表）</li>
+                            <li>🔍 数据自动清洗与异常检测</li>
+                            <li>⚡ 电导率计算与金属材质自动匹配</li>
+                            <li>📧 结题报告邮件自动发送</li>
+                            <li>🎮 物理模拟引擎（离线演示模式）</li>
+                            <li>🔗 Pinggy 内网穿透支持</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/main.js?v=20250609"></script>
+    <script src="js/charts.js?v=20250609"></script>
+    <script src="js/api.js?v=20250609"></script>
+</body>
+</html>

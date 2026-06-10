@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>管理后台 — 物理实验助手</title>
+    <link rel="stylesheet" href="css/style.css?v=20250609">
+    <style>
+        .admin-page {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 20px;
+        }
+        .admin-login-card {
+            max-width: 420px;
+            margin: 80px auto;
+            padding: 40px 36px;
+            border-radius: 24px;
+            background: rgba(235,240,255,0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(166,180,230,0.5);
+            box-shadow: 0 8px 32px rgba(59,84,212,0.12);
+            text-align: center;
+        }
+        .admin-login-card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+        .admin-login-card .subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 28px;
+        }
+        .admin-login-card input {
+            width: 100%;
+            padding: 14px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-family: inherit;
+            text-align: center;
+            letter-spacing: 2px;
+            outline: none;
+            transition: border-color 0.25s;
+            background: #fff;
+        }
+        .admin-login-card input:focus {
+            border-color: #4f6ef7;
+            box-shadow: 0 0 0 4px rgba(79,110,247,0.08);
+        }
+        .admin-login-card button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            background: linear-gradient(135deg, #4f6ef7, #6366f1);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(79,110,247,0.3);
+            transition: all 0.25s;
+        }
+        .admin-login-card button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 22px rgba(79,110,247,0.4);
+        }
+        .admin-login-card .error-msg {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 14px;
+            min-height: 20px;
+        }
+        .admin-login-card .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #64748b;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .admin-login-card .back-link:hover {
+            color: #4f6ef7;
+        }
+
+        /* Dashboard */
+        .admin-dashboard {
+            display: none;
+        }
+        .admin-dashboard.active {
+            display: block;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .dashboard-header h2 {
+            font-size: 1.5rem;
+            color: #1e293b;
+        }
+        .dashboard-stats {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            padding: 20px 24px;
+            border-radius: 16px;
+            background: rgba(235,240,255,0.92);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(166,180,230,0.5);
+            box-shadow: 0 4px 16px rgba(59,84,212,0.08);
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4f6ef7;
+        }
+        .stat-card .stat-label {
+            font-size: 0.82rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        .dashboard-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .dashboard-actions button {
+            padding: 10px 22px;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            background: #fff;
+            color: #64748b;
+            transition: all 0.25s;
+        }
+        .dashboard-actions button:hover {
+            border-color: #4f6ef7;
+            color: #4f6ef7;
+        }
+        .dashboard-tabs {
+            display: flex;
+            gap: 6px;
+            background: rgba(226,232,240,0.5);
+            border-radius: 50px;
+            padding: 4px;
+        }
+        .dash-tab {
+            padding: 9px 22px;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            background: transparent;
+            color: #64748b;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .dash-tab.active {
+            background: #fff;
+            color: #4f6ef7;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .dash-tab:hover:not(.active) {
+            color: #4f6ef7;
+        }
+        .dashboard-actions .logout-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            border-color: transparent;
+        }
+        .dashboard-actions .logout-btn:hover {
+            opacity: 0.9;
+            color: #fff;
+        }
+        .dashboard-actions .refresh-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .visit-table-wrapper {
+            border-radius: 20px;
+            background: rgba(235,240,255,0.92);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(166,180,230,0.5);
+            box-shadow: 0 4px 20px rgba(59,84,212,0.08);
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            background: linear-gradient(135deg, #eef1ff, #e0e7ff);
+        }
+        th {
+            padding: 14px 16px;
+            font-size: 0.82rem;
+            text-align: left;
+            color: #475569;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 16px;
+            font-size: 0.82rem;
+            color: #334155;
+            border-bottom: 1px solid rgba(226,232,240,0.6);
+        }
+        tr:hover td {
+            background: rgba(79,110,247,0.04);
+        }
+        .delete-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+            transition: all 0.2s;
+        }
+        .delete-btn:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        /* Dark mode for admin page */
+        [data-theme="dark"] .admin-login-card,
+        [data-theme="dark"] .stat-card,
+        [data-theme="dark"] .visit-table-wrapper {
+            background: rgba(30,41,59,0.95);
+            border-color: rgba(51,65,85,0.6);
+        }
+        [data-theme="dark"] .admin-login-card h2,
+        [data-theme="dark"] .dashboard-header h2 {
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .admin-login-card .subtitle {
+            color: #94a3b8;
+        }
+        [data-theme="dark"] .admin-login-card input {
+            background: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] thead {
+            background: linear-gradient(135deg, #1e293b, #1e293b);
+        }
+        [data-theme="dark"] th {
+            color: #94a3b8;
+        }
+        [data-theme="dark"] td {
+            color: #e2e8f0;
+            border-bottom-color: rgba(51,65,85,0.4);
+        }
+        [data-theme="dark"] tr:hover td {
+            background: rgba(79,110,247,0.08);
+        }
+        [data-theme="dark"] .delete-btn {
+            background: rgba(239,68,68,0.15);
+            border-color: rgba(239,68,68,0.3);
+        }
+        [data-theme="dark"] .dashboard-actions button {
+            background: #334155;
+            border-color: #475569;
+            color: #94a3b8;
+        }
+        [data-theme="dark"] .dashboard-tabs {
+            background: rgba(51,65,85,0.5);
+        }
+        [data-theme="dark"] .dash-tab.active {
+            background: #334155;
+            color: #818cf8;
+        }
+        [data-theme="dark"] .dash-tab:hover:not(.active) {
+            color: #818cf8;
+        }
+        [data-theme="dark"] .empty-state {
+            color: #64748b;
+        }
+        [data-theme="dark"] .back-link {
+            color: #94a3b8;
+        }
+
+        @media (max-width: 768px) {
+            .admin-page {
+                padding: 12px;
+                margin: 20px auto;
+            }
+            .admin-login-card {
+                margin: 40px auto;
+                padding: 30px 20px;
+            }
+            .dashboard-stats {
+                flex-direction: column;
+            }
+            .stat-card {
+                min-width: auto;
+            }
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.73rem;
+            }
+            .visit-table-wrapper {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-page">
+        <!-- Login Screen -->
+        <div class="admin-login-card" id="loginCard">
+            <h2>🔐 管理后台</h2>
+            <p class="subtitle">请输入管理密码以查看访问记录</p>
+            <input type="password" id="passwordInput" placeholder="管理密码" autocomplete="off">
+            <button id="loginBtn">验证进入</button>
+            <div class="error-msg" id="loginError"></div>
+            <a href="/" class="back-link">← 返回主页</a>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div class="admin-dashboard" id="dashboard">
+            <div class="dashboard-header">
+                <div class="dashboard-tabs">
+                    <button class="dash-tab active" data-tab="visits">📊 访问记录</button>
+                    <button class="dash-tab" data-tab="feedback">💬 用户反馈</button>
+                </div>
+                <div class="dashboard-actions">
+                    <button class="refresh-btn" id="refreshBtn">🔄 刷新数据</button>
+                    <button class="logout-btn" id="logoutBtn">退出登录</button>
+                </div>
+            </div>
+            <!-- Visits Panel -->
+            <div class="dash-panel" id="panelVisits">
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalVisits">0</div>
+                        <div class="stat-label">总访问次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalIPs">0</div>
+                        <div class="stat-label">独立 IP 数</div>
+                    </div>
+                </div>
+                <div class="visit-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>IP 地址</th>
+                                <th>访问时间</th>
+                                <th>设备类型</th>
+                                <th>浏览器</th>
+                                <th>操作系统</th>
+                                <th>屏幕分辨率</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitTableBody">
+                            <tr><td colspan="8" class="empty-state">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Feedback Panel -->
+            <div class="dash-panel" id="panelFeedback" style="display:none;">
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalFeedback">0</div>
+                        <div class="stat-label">反馈总数</div>
+                    </div>
+                </div>
+                <div class="visit-table-wrapper" id="feedbackTableWrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>IP 地址</th>
+                                <th>时间</th>
+                                <th>联系方式</th>
+                                <th>反馈内容</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feedbackTableBody">
+                            <tr><td colspan="6" class="empty-state">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let adminPassword = '';
+        let lockTimer = null;
+        const loginCard = document.getElementById('loginCard');
+        const dashboard = document.getElementById('dashboard');
+        const loginError = document.getElementById('loginError');
+        const loginBtn = document.getElementById('loginBtn');
+        const passwordInput = document.getElementById('passwordInput');
+
+        // Enter key to login
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
+        loginBtn.addEventListener('click', login);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        document.getElementById('refreshBtn').addEventListener('click', refreshCurrentTab);
+
+        // Tab switching
+        let currentTab = 'visits';
+        document.querySelectorAll('.dash-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.dash-tab').forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                currentTab = tab.dataset.tab;
+                document.getElementById('panelVisits').style.display = currentTab === 'visits' ? '' : 'none';
+                document.getElementById('panelFeedback').style.display = currentTab === 'feedback' ? '' : 'none';
+                refreshCurrentTab();
+            });
+        });
+
+        function refreshCurrentTab() {
+            if (currentTab === 'feedback') loadFeedback();
+            else loadVisits();
+        }
+
+        function login() {
+            if (loginBtn.disabled) return;
+            const pwd = passwordInput.value.trim();
+            if (!pwd) {
+                loginError.textContent = '请输入密码';
+                return;
+            }
+            loginError.textContent = '';
+            adminPassword = pwd;
+            loadVisits();
+        }
+
+        function logout() {
+            adminPassword = '';
+            loginCard.style.display = '';
+            dashboard.classList.remove('active');
+            passwordInput.value = '';
+            if (lockTimer) clearInterval(lockTimer);
+        }
+
+        function startCountdown(seconds) {
+            loginBtn.disabled = true;
+            passwordInput.disabled = true;
+            let remaining = seconds;
+            loginError.textContent = '密码错误次数过多，请 ' + remaining + ' 秒后重试';
+            if (lockTimer) clearInterval(lockTimer);
+            lockTimer = setInterval(function() {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(lockTimer);
+                    lockTimer = null;
+                    loginBtn.disabled = false;
+                    passwordInput.disabled = false;
+                    loginError.textContent = '';
+                } else {
+                    loginError.textContent = '密码错误次数过多，请 ' + remaining + ' 秒后重试';
+                }
+            }, 1000);
+        }
+
+        async function loadVisits() {
+            if (!adminPassword) return;
+            try {
+                const res = await fetch('/api/visits/admin/list', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPassword })
+                });
+                if (res.status === 403) {
+                    const err = await res.json();
+                    loginError.textContent = err.error || '密码错误，请重试';
+                    if (err.remainingSeconds) {
+                        startCountdown(parseInt(err.remainingSeconds));
+                    }
+                    loginCard.style.display = '';
+                    dashboard.classList.remove('active');
+                    return;
+                }
+                const data = await res.json();
+                loginCard.style.display = 'none';
+                dashboard.classList.add('active');
+                renderVisits(data.visits);
+            } catch (e) {
+                loginError.textContent = '连接失败，请检查服务器';
+            }
+        }
+
+        function renderVisits(visits) {
+            const tbody = document.getElementById('visitTableBody');
+            document.getElementById('totalVisits').textContent = visits.length;
+            const ips = new Set(visits.map(v => v.IP_ADDRESS || v.ip_address));
+            document.getElementById('totalIPs').textContent = ips.size;
+
+            if (!visits.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state">暂无访问记录</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = visits.map(v => {
+                const id = v.ID || v.id;
+                const ip = v.IP_ADDRESS || v.ip_address || '-';
+                const time = formatTime(v.VISIT_TIME || v.visit_time);
+                const device = v.DEVICE_TYPE || v.device_type || '-';
+                const browser = v.BROWSER_NAME || v.browser_name || '-';
+                const os = v.OS_NAME || v.os_name || '-';
+                const screen = v.SCREEN_RESOLUTION || v.screen_resolution || '-';
+                return '<tr>' +
+                    '<td>' + id + '</td>' +
+                    '<td>' + escapeHtml(ip) + '</td>' +
+                    '<td>' + escapeHtml(time) + '</td>' +
+                    '<td>' + escapeHtml(device) + '</td>' +
+                    '<td>' + escapeHtml(browser) + '</td>' +
+                    '<td>' + escapeHtml(os) + '</td>' +
+                    '<td>' + escapeHtml(screen) + '</td>' +
+                    '<td><button class="delete-btn" onclick="deleteVisit(' + id + ')">删除</button></td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        async function deleteVisit(id) {
+            if (!confirm('确定要删除这条访问记录吗？')) return;
+            try {
+                const res = await fetch('/api/visits/admin/delete/' + id, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPassword })
+                });
+                if (res.ok) {
+                    loadVisits();
+                } else {
+                    alert('删除失败');
+                }
+            } catch (e) {
+                alert('网络错误，请重试');
+            }
+        }
+
+        // --- Feedback ---
+        async function loadFeedback() {
+            if (!adminPassword) return;
+            try {
+                const res = await fetch('/api/feedback/admin/list', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPassword })
+                });
+                if (res.status === 403) {
+                    const err = await res.json();
+                    loginError.textContent = err.error || '密码错误，请重试';
+                    if (err.remainingSeconds) startCountdown(parseInt(err.remainingSeconds));
+                    loginCard.style.display = '';
+                    dashboard.classList.remove('active');
+                    return;
+                }
+                const data = await res.json();
+                loginCard.style.display = 'none';
+                dashboard.classList.add('active');
+                renderFeedback(data.feedbacks);
+            } catch (e) {
+                loginError.textContent = '连接失败，请检查服务器';
+            }
+        }
+
+        function renderFeedback(feedbacks) {
+            const tbody = document.getElementById('feedbackTableBody');
+            document.getElementById('totalFeedback').textContent = feedbacks.length;
+
+            if (!feedbacks.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无用户反馈</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = feedbacks.map(function(f) {
+                var id = f.ID || f.id;
+                var ip = f.IP_ADDRESS || f.ip_address || '-';
+                var time = formatTime(f.FEEDBACK_TIME || f.feedback_time);
+                var contact = f.CONTACT || f.contact || '-';
+                var content = f.CONTENT || f.content || '';
+                return '<tr>' +
+                    '<td>' + id + '</td>' +
+                    '<td>' + escapeHtml(ip) + '</td>' +
+                    '<td>' + escapeHtml(time) + '</td>' +
+                    '<td>' + escapeHtml(contact) + '</td>' +
+                    '<td style="max-width:240px;word-break:break-word;">' + escapeHtml(content) + '</td>' +
+                    '<td><button class="delete-btn" onclick="deleteFeedback(' + id + ')">删除</button></td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        async function deleteFeedback(id) {
+            if (!confirm('确定要删除这条反馈吗？')) return;
+            try {
+                const res = await fetch('/api/feedback/admin/delete/' + id, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPassword })
+                });
+                if (res.ok) {
+                    loadFeedback();
+                } else {
+                    alert('删除失败');
+                }
+            } catch (e) {
+                alert('网络错误，请重试');
+            }
+        }
+
+        function escapeHtml(text) {
+            return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function formatTime(raw) {
+            if (!raw) return '-';
+            try {
+                var d = new Date(raw);
+                if (isNaN(d.getTime())) return raw;
+                var y = d.getFullYear();
+                var M = String(d.getMonth() + 1).padStart(2, '0');
+                var day = String(d.getDate()).padStart(2, '0');
+                var h = String(d.getHours()).padStart(2, '0');
+                var m = String(d.getMinutes()).padStart(2, '0');
+                var s = String(d.getSeconds()).padStart(2, '0');
+                return y + '-' + M + '-' + day + ' ' + h + ':' + m + ':' + s;
+            } catch (e) {
+                return raw;
+            }
+        }
+
+        // Sync dark mode with main page
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</body>
+</html>

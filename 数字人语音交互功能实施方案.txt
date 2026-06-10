@@ -1,0 +1,190 @@
+数字人语音交互功能实施方案
+========================================
+
+一、项目背景
+----------------------------------------
+当前项目是一个"物理实验助手"系统（Spring Boot 3.2 + 原生 HTML/CSS/JS），
+左侧面板有一个基于 DeepSeek API 的 AI 文字聊天窗口。
+用户目前只能通过文字输入与 AI 交互。
+
+本次需求：新增一个可选择的数字人形象，支持语音输入和语音输出，
+数字人说话时嘴型与语音同步（唇同步），用户可以在文字输入和语音输入之间自由切换。
+
+
+二、技术方案：纯前端浏览器 API 实现（后端零改动）
+----------------------------------------
+所有语音和数字人功能完全在前端实现，不需要修改任何后端代码或添加 Maven 依赖：
+
+  - 语音识别 (STT)：使用浏览器内置的 Web Speech API (SpeechRecognition)，支持中文 (zh-CN)
+  - 语音合成 (TTS)：使用浏览器内置的 Web Speech API (SpeechSynthesis)，支持中文发音
+  - 数字人渲染：使用 Canvas 2D API 绘制角色，使用 requestAnimationFrame 驱动动画
+  - 完全免费，不需要任何第三方 API Key，不需要额外安装依赖
+
+
+三、需要创建的新文件
+----------------------------------------
+
+3.1 frontend/js/voice.js —— 语音输入/输出模块
+
+    【语音识别功能 (STT)】
+    - startListening()：初始化 SpeechRecognition，设置 lang='zh-CN'
+    - 请求麦克风权限，显示"正在聆听"状态
+    - 识别完成后自动发送消息（真正的免提对话体验）
+    - stopListening()：手动停止监听
+    - isSupported()：检测浏览器是否支持语音识别，不支持时优雅降级
+
+    【语音合成功能 (TTS)】
+    - 语音播报默认关闭，用户点击按钮手动开启（图标从 🔇 变为 🔊）
+    - speak(text, onBoundary, onEnd)：创建 SpeechSynthesisUtterance
+      · lang='zh-CN'，选择最优中文发音人
+      · onboundary 事件驱动唇同步动画
+      · onend 事件让数字人回到待机状态
+    - stopSpeaking()：取消当前播放
+    - isSupported()：检测浏览器是否支持语音合成
+
+    【通过 window.* 暴露的接口】
+    - window.startVoiceInput / window.stopVoiceInput
+    - window.speakResponse / window.stopSpeaking
+    - window.isVoiceInputActive
+    - window.onVoiceStateChange（回调：idle / listening / speaking / thinking）
+
+
+3.2 frontend/js/avatar.js —— 数字人渲染引擎
+
+    【四种可选角色 (AVATARS)】
+    默认角色为"卡通角色"，其他可选：
+
+    1. ★ 卡通角色（默认）—— 明亮的大眼睛，暖橙色头发，可爱微笑，
+       色彩鲜艳的服装，夸张讨喜的五官比例，适合教学场景
+
+    2. 女助手 —— 温暖肤色，黑色长发，职业衬衫，温柔微笑
+
+    3. 男助手 —— 浅色肤色，黑色短发，实验室白大褂，可选眼镜
+
+    4. 机器人 —— 金属灰色，LED 眼睛，机械面板，科技主题
+
+    【渲染核心 (AvatarRenderer 类)】
+    - 构造函数：接收 canvas 元素和角色配置
+    - 状态机：idle（待机）/ listening（聆听）/ thinking（思考中）/ speaking（说话中）
+    - draw()：主渲染方法 —— 绘制头部（圆形）、头发、眼睛、嘴巴、可选身体
+    - setState(state)：切换角色状态
+    - setMouthOpen(level)：控制嘴型开合度（0=闭合, 1=微张, 2=半开, 3=张开, 4=大张）
+
+    【动画循环 (requestAnimationFrame)】
+    - 待机状态：轻微呼吸动画（缩放任 ±1%），每 2-4 秒眨眼一次
+    - 聆听状态：身体微微前倾，眼神专注，嘴角微扬
+    - 思考状态：眼睛向上看，头部微微倾斜，偶尔眨眼
+    - 说话状态：嘴巴根据 setMouthOpen() 驱动开合，眼睛正常，头部微动
+
+    【唇同步逻辑】
+    - 每个 TTS onboundary 事件触发时，循环切换嘴型：
+      闭合 → 微张 → 半开 → 张开 → 半开 → 微张 → 闭合
+    - 每个边界点前进 1-2 步（根据语句长度）
+    - TTS onend 时嘴巴恢复闭合，回到待机状态
+    - 不需要复杂的音素分析，视觉效果自然流畅
+
+    【角色选择 UI】
+    - 数字人画布下方排列 4 个小圆形头像预览按钮
+    - 点击切换角色，立即重绘
+    - 选择结果保存到 localStorage，刷新页面后保持
+
+
+3.3 frontend/index.html —— 页面结构新增
+
+    在左侧 AI 助手面板（.ai-assistant-panel）中添加：
+
+    【数字人区域】（放在聊天消息上方）
+    <div class="avatar-container" id="avatarContainer">
+        <canvas id="avatarCanvas" width="280" height="320"></canvas>
+        <div class="avatar-selector" id="avatarSelector">
+            <!-- 4 个小圆形角色预览按钮 -->
+        </div>
+    </div>
+
+    【修改后的输入区域】
+    <div class="chat-input-container">
+        <button id="voiceInputBtn" title="语音输入">🎤</button>
+        <input type="text" id="userInput" placeholder="输入你的问题或点击麦克风语音输入..." />
+        <button id="sendMessageBtn">发送</button>
+        <button id="voiceOutputToggle" title="语音播报（默认关闭，点击开启）">🔇</button>
+    </div>
+
+    【引入 JS 文件】（在 main.js 之前加载）
+    <script src="js/avatar.js"></script>
+    <script src="js/voice.js"></script>
+
+
+3.4 frontend/css/style.css —— 新增样式
+
+    - .avatar-container：居中布局，软新拟物边框包裹 canvas
+    - #avatarCanvas：圆角，新拟物阴影
+    - .avatar-selector：水平排列 4 个小圆形按钮
+    - .avatar-selector-btn：48px 圆形按钮，hover 放大，active 内阴影+蓝色边框
+    - #voiceInputBtn：麦克风按钮样式，聆听时红色脉冲动画 @keyframes pulse-mic
+    - #voiceOutputToggle：喇叭开关，开启时绿色，关闭时灰色
+    - 移动端响应式：canvas 缩小至 180×220，按钮变小
+
+
+四、需要修改的现有文件
+----------------------------------------
+
+4.1 frontend/js/main.js —— 集成改动
+
+    【在 DOMContentLoaded 中新增】
+    - 初始化 AvatarRenderer（默认卡通角色）
+    - 初始化语音模块，检测浏览器兼容性
+    - 绑定麦克风按钮 → 开始/停止语音输入
+    - 绑定喇叭按钮 → 开启/关闭语音播报
+    - 绑定角色选择按钮事件
+    - 如果浏览器不支持 SpeechRecognition，隐藏麦克风按钮
+
+    【修改 sendMessage() 函数】
+    - 收到 AI 回复文本后，如果语音播报已开启：
+      调用 window.speakResponse(text, onBoundaryFn, onEndFn)
+      onBoundaryFn → avatarRenderer.setMouthOpen(循环步数)
+      onEndFn → avatarRenderer.setState('idle')
+    - 显示"正在思考..."时 → avatarRenderer.setState('thinking')
+
+    【语音输入流程】
+    - 语音识别完成 → 直接调用 sendMessage(transcript) 自动发送
+    - 开始聆听 → avatarRenderer.setState('listening')
+    - 聆听结束 → avatarRenderer.setState('idle')
+
+
+五、数据流程图
+----------------------------------------
+
+    【语音输入流程】
+    用户点击 🎤 → 请求麦克风权限 → SpeechRecognition 开始
+    → 数字人进入"聆听"状态（身体前倾，眼神专注）
+    → 用户说话 → 实时显示识别文字 → 识别完成自动发送
+    → 数字人进入"思考"状态 → AI 返回文字 → 数字人进入"说话"状态
+    → 语音播报结束 → 数字人回到"待机"状态
+
+    【语音输出流程】
+    AI 回复文字到达 → 显示为聊天气泡（现有逻辑不变）
+    → 如果语音播报已开启：TTS 开始朗读回复内容
+    → onboundary 事件驱动数字人嘴型变化（唇同步）
+    → 数字人处于"说话"状态
+    → 语音播放完毕 → 数字人回到"待机"状态（呼吸+眨眼）
+
+
+六、验证方案
+----------------------------------------
+    1. 数字人渲染：打开页面，确认默认卡通角色显示，呼吸/眨眼动画正常
+    2. 角色切换：点击每个角色头像，确认角色立即切换，刷新页面后保持选择
+    3. 语音输入：点击麦克风按钮，授权后说中文，确认文字自动发送
+    4. 语音播报：手动开启语音播报，发送消息，确认 AI 回复被朗读且嘴型同步
+    5. 文字输入正常：输入文字发送，确认原有流程不受影响
+    6. 移动端适配：调整浏览器窗口到手机宽度，确认数字人和按钮布局正常
+    7. 兼容性检测：在不支持 Speech API 的浏览器中打开，确认麦克风按钮隐藏
+    8. 并发处理：AI 正在说话时点击麦克风，确认 TTS 正常停止，新流程启动
+
+
+七、技术依赖与环境要求
+----------------------------------------
+    - 浏览器：Chrome / Edge（Web Speech API 兼容性最佳）
+    - 不需要任何第三方服务或 API Key
+    - 不需要安装任何 npm 包或 Maven 依赖
+    - 不需要修改后端代码
+    - 所有功能在 HTTPS 或 localhost 环境下均可正常运行

@@ -1,0 +1,35 @@
+# Maven build output
+target/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Database files (contain sensitive/local data)
+data/*.db
+data/*.mv.db
+data/*.trace.db
+
+# Logs
+*.log
+maven.log
+mvn_out.log
+mvn_err.log
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temp files
+*.tmp
+*.swp
+*.bak
+
+# Environment / secrets
+.env
+*.env.local
