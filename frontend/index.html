@@ -6,15 +6,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>物理实验助手 v2.3.3</title>
+    <title>物理实验助手 v2.3.4</title>
     <link rel="icon" type="image/png" href="images/logo.png">
-    <link href="css/style.css?v=20250614" rel="stylesheet">
+    <link href="css/style.css?v=20250614b" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><img alt="logo" class="site-logo" src="images/logo.png">物理实验助手 v2.3.3</h1>
+            <h1><img alt="logo" class="site-logo" src="images/logo.png">物理实验助手 v2.3.4</h1>
             <div class="header-center-group">
                 <span class="device-status" id="deviceStatus">
                     <span class="status-dot" id="deviceDot"></span>
@@ -291,7 +291,7 @@
         
         <footer>
             <div class="footer-info">
-                <p>物理实验助手 v2.3.2 | 使用 DeepSeek AI 和 ESP8266 物联网技术</p>
+                <p>物理实验助手 v2.3.4 | 使用 DeepSeek AI 和 ESP8266 物联网技术</p>
                 <p>通过 cpolar 内网穿透工具提供远程访问</p>
             </div>
         </footer>
@@ -330,6 +330,19 @@
             </div>
         </div>
 
+        <!-- Chart Fullscreen Modal -->
+        <div class="modal-overlay" id="chartFullscreenModal">
+            <div class="modal-content chart-fullscreen-content">
+                <div class="modal-header">
+                    <h2 id="chartFullscreenTitle">📊 图表放大</h2>
+                    <button class="modal-close" id="chartFullscreenClose">&times;</button>
+                </div>
+                <div class="modal-body chart-fullscreen-body">
+                    <canvas id="chartFullscreenCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
         <!-- Changelog Modal -->
         <div class="modal-overlay" id="changelogModal">
             <div class="modal-content">
@@ -338,6 +351,16 @@
                     <button class="modal-close" id="changelogClose">&times;</button>
                 </div>
                 <div class="modal-body">
+                    <div class="changelog-entry v234">
+                        <h3>v2.3.4 — 2026-06-14</h3>
+                        <ul>
+                            <li>📱 <strong>移动端按钮统一</strong>：顶栏所有按钮统一高度和间距，视觉更整洁</li>
+                            <li>💬 <strong>对话区滚动修复</strong>：移动端聊天区支持顺畅滚动浏览消息，不再溢出到页面下方</li>
+                            <li>📊 <strong>图表布局优化</strong>：移动端三图改为纵向排列，每个图表全宽展示，不再拥挤</li>
+                            <li>🔍 <strong>图表点击放大</strong>：电脑端和移动端均可点击任意图表以弹窗全屏查看</li>
+                            <li>🎨 <strong>整体布局微调</strong>：间距、响应式断点全面优化</li>
+                        </ul>
+                    </div>
                     <div class="changelog-entry v233">
                         <h3>v2.3.3 — 2026-06-14</h3>
                         <ul>
@@ -442,8 +465,8 @@
         </div>
     </div>
     
-    <script src="js/main.js?v=20250609"></script>
-    <script src="js/charts.js?v=20250609"></script>
-    <script src="js/api.js?v=20250609"></script>
+    <script src="js/main.js?v=20250614b"></script>
+    <script src="js/charts.js?v=20250614b"></script>
+    <script src="js/api.js?v=20250614b"></script>
 </body>
 </html>

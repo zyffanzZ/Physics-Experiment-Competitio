@@ -142,6 +142,17 @@ header h1 {
     flex-shrink: 0;
 }
 
+/* Unify all header action buttons to same size */
+.theme-toggle-btn,
+.changelog-btn,
+.admin-btn,
+.feedback-btn,
+.connect-btn {
+    height: 44px;
+    line-height: 1;
+    box-sizing: border-box;
+}
+
 /* ============ Device Status ============ */
 .device-status {
     display: inline-flex;
@@ -966,11 +977,13 @@ footer p:last-child {
         flex: none !important;
     }
 
+    /* Chat container: fixed max-height with proper scroll */
     .chat-container {
         min-height: 280px;
-        max-height: none;
+        max-height: 55vh;
         height: auto;
-        overflow-y: visible;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
     }
 
     .ai-assistant-panel .panel-header {
@@ -1089,7 +1102,7 @@ footer p:last-child {
         font-size: 1.2rem;
     }
 
-    /* Charts → stack rows */
+    /* Charts → stack into vertical 1-column layout on mobile */
     .charts-container {
         padding: 6px 8px 14px;
         gap: 10px;
@@ -1099,25 +1112,31 @@ footer p:last-child {
         gap: 10px;
     }
 
+    /* Row 1 (3 kinematic charts) → stack vertically, full width each */
+    .charts-row-top {
+        flex-direction: column;
+    }
+
     .charts-row-top .chart-item {
-        flex: 1 1 0;
+        flex: 1 1 auto;
+        width: 100%;
         min-width: 0;
         padding: 12px 8px 10px;
     }
 
     .charts-row-bottom {
-        flex-direction: row;
-        flex-wrap: wrap;
+        flex-direction: column;
     }
 
     .charts-row-bottom .chart-item {
-        flex: 1 1 100%;
+        flex: 1 1 auto;
+        width: 100%;
         min-width: 100%;
         max-width: 100%;
     }
 
     .charts-row-top .chart-item canvas {
-        height: 140px !important;
+        height: 160px !important;
     }
 
     .charts-row-bottom .chart-item canvas {
@@ -1205,18 +1224,29 @@ footer p:last-child {
         height: 26px;
         border-radius: 6px;
     }
-    /* Header buttons: stack tighter */
+    /* Header buttons: unified size, tighter */
     .header-center-group,
     .header-right-group {
         gap: 6px !important;
     }
     .device-status {
-        padding: 6px 12px;
+        padding: 7px 14px;
         font-size: 0.75rem;
+        height: 38px;
+        box-sizing: border-box;
     }
-    .connect-btn, .changelog-btn, .admin-btn {
-        padding: 6px 10px;
+    .connect-btn, .changelog-btn, .admin-btn, .feedback-btn, .theme-toggle-btn {
+        padding: 7px 14px;
         font-size: 0.72rem;
+        height: 38px;
+        box-sizing: border-box;
+    }
+    .theme-toggle-btn {
+        width: 38px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .mobile-actions-bar {
@@ -1316,7 +1346,7 @@ footer p:last-child {
         font-size: 1.1rem;
     }
 
-    /* Charts: still 3 columns top, stacked bottom */
+    /* Charts: stack vertically on very narrow screens */
     .charts-container {
         padding: 4px 6px 8px;
         gap: 8px;
@@ -1326,24 +1356,34 @@ footer p:last-child {
         gap: 6px;
     }
 
+    .charts-row-top {
+        flex-direction: column;
+    }
+
     .charts-row-top .chart-item {
-        flex: 1 1 0;
+        flex: 1 1 auto;
+        width: 100%;
         min-width: 0;
         padding: 10px 6px 8px;
     }
 
     .charts-row-top .chart-item canvas {
-        height: 115px !important;
+        height: 140px !important;
+    }
+
+    .charts-row-bottom {
+        flex-direction: column;
     }
 
     .charts-row-bottom .chart-item {
-        flex: 1 1 100%;
+        flex: 1 1 auto;
+        width: 100%;
         min-width: 100%;
         max-width: 100%;
     }
 
     .charts-row-bottom .chart-item canvas {
-        height: 150px !important;
+        height: 160px !important;
     }
 
     .ai-assistant-panel .panel-header {
@@ -1793,6 +1833,9 @@ footer p:last-child {
 .changelog-entry.v233 h3 {
     color: #7c3aed;
 }
+.changelog-entry.v234 h3 {
+    color: #0ea5e9;
+}
 .changelog-entry ul {
     list-style: none;
     padding: 0;
@@ -2060,8 +2103,76 @@ footer p:last-child {
 }
 
 /* ==========================================
+   CHART FULLSCREEN MODAL
+   ========================================== */
+.chart-item {
+    cursor: pointer;
+    position: relative;
+}
+
+.chart-item::after {
+    content: '🔍 点击放大';
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    background: rgba(255,255,255,0.85);
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.chart-item:hover::after {
+    opacity: 1;
+}
+
+.chart-fullscreen-content {
+    max-width: 90vw;
+    width: 90vw;
+    max-height: 90vh;
+}
+
+.chart-fullscreen-body {
+    padding: 16px 28px 28px;
+}
+
+.chart-fullscreen-body canvas {
+    width: 100% !important;
+    height: 60vh !important;
+    max-height: 70vh;
+}
+
+@media (max-width: 768px) {
+    .chart-fullscreen-content {
+        max-width: 96vw;
+        width: 96vw;
+        max-height: 92vh;
+    }
+    .chart-fullscreen-body {
+        padding: 10px 12px 18px;
+    }
+    .chart-fullscreen-body canvas {
+        height: 50vh !important;
+    }
+    /* Hide the tooltip on mobile (use tap) */
+    .chart-item::after {
+        display: none;
+    }
+}
+
+/* ==========================================
    DARK MODE — Full Component Adaptation
    ========================================== */
+
+[data-theme="dark"] .chart-item::after {
+    background: rgba(30,41,59,0.85);
+    border-color: var(--border);
+    color: var(--text-muted);
+}
 
 [data-theme="dark"] body {
     background:

@@ -149,7 +149,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         messageDiv.innerHTML = '<p>' + html + '</p>';
         chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // Scroll the outer chat container (not inner messages div)
+        const chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        } else {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     }
     
     function escapeHtml(text) {
@@ -822,4 +828,91 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('Auto-reset on load failed:', e);
         }
     })();
+
+    // ========== Chart Fullscreen Zoom ==========
+    const chartFullscreenModal = document.getElementById('chartFullscreenModal');
+    const chartFullscreenClose = document.getElementById('chartFullscreenClose');
+    const chartFullscreenTitle = document.getElementById('chartFullscreenTitle');
+    const chartFullscreenCanvas = document.getElementById('chartFullscreenCanvas');
+    let fullscreenChart = null;
+
+    function openChartFullscreen(chartItemEl) {
+        const sourceCanvas = chartItemEl.querySelector('canvas');
+        const label = chartItemEl.querySelector('.chart-label');
+        if (!sourceCanvas) return;
+
+        const chartTitle = label ? label.textContent : '图表放大';
+
+        // Try to find the original Chart instance from the global charts map
+        let sourceChart = null;
+        if (window._chartsMap) {
+            const canvasId = sourceCanvas.id;
+            sourceChart = window._chartsMap[canvasId];
+        }
+
+        chartFullscreenTitle.textContent = '📊 ' + chartTitle;
+        chartFullscreenModal.classList.add('open');
+
+        // Small delay to let modal render before sizing canvas
+        setTimeout(function() {
+            if (sourceChart) {
+                // Clone the chart: create new Chart with same config
+                const origConfig = sourceChart.config;
+                // Deep clone config to avoid shared references
+                const clonedData = JSON.parse(JSON.stringify(origConfig.data));
+                const clonedOptions = JSON.parse(JSON.stringify(origConfig.options));
+
+                // Adjust options for fullscreen view
+                clonedOptions.responsive = true;
+                clonedOptions.maintainAspectRatio = false;
+                clonedOptions.animation = false;
+                if (clonedOptions.plugins && clonedOptions.plugins.legend) {
+                    clonedOptions.plugins.legend.display = true;
+                    clonedOptions.plugins.legend.position = 'top';
+                }
+
+                if (fullscreenChart) {
+                    fullscreenChart.destroy();
+                    fullscreenChart = null;
+                }
+
+                const ctx = chartFullscreenCanvas.getContext('2d');
+                fullscreenChart = new Chart(ctx, {
+                    type: origConfig.type,
+                    data: clonedData,
+                    options: clonedOptions
+                });
+            }
+        }, 100);
+    }
+
+    function closeChartFullscreen() {
+        chartFullscreenModal.classList.remove('open');
+        if (fullscreenChart) {
+            fullscreenChart.destroy();
+            fullscreenChart = null;
+        }
+    }
+
+    // Bind click on all chart items
+    document.querySelectorAll('.chart-item').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            // Don't trigger if clicking on canvas resize handles etc.
+            openChartFullscreen(item);
+        });
+    });
+
+    if (chartFullscreenClose) {
+        chartFullscreenClose.addEventListener('click', closeChartFullscreen);
+    }
+    if (chartFullscreenModal) {
+        chartFullscreenModal.addEventListener('click', function(e) {
+            if (e.target === chartFullscreenModal) closeChartFullscreen();
+        });
+    }
+
+    // Expose charts map for fullscreen access
+    window.registerChartsMap = function(map) {
+        window._chartsMap = map;
+    };
 });

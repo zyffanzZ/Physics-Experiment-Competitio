@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const charts = {};
+    // Charts canvas-id → Chart instance map for fullscreen zoom
+    window._chartsMap = window._chartsMap || {};
     let timeData = [];
     let displacementData = [];
     let velocityData = [];
@@ -106,11 +108,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const ctx = canvas.getContext('2d');
         showChartItem(id);
         charts[id] = def.create(ctx);
+        // Register for fullscreen zoom
+        registerChartCanvas(def.canvasId, charts[id]);
     }
 
     function destroyChart(id) {
         if (charts[id]) { charts[id].destroy(); charts[id] = null; }
+        unregisterChartCanvas(chartDefs[id].canvasId);
         hideChartItem(id);
+    }
+
+    function registerChartCanvas(canvasId, chart) {
+        if (window._chartsMap) {
+            window._chartsMap[canvasId] = chart;
+        }
+    }
+
+    function unregisterChartCanvas(canvasId) {
+        if (window._chartsMap && window._chartsMap[canvasId]) {
+            delete window._chartsMap[canvasId];
+        }
     }
 
     function toggleChart(id, visible) {
