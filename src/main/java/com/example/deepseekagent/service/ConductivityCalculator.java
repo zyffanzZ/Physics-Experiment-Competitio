@@ -2,33 +2,39 @@ package com.example.deepseekagent.service;
 
 public class ConductivityCalculator {
 
-    // 实验装置物理常量（标准国际单位）
-    private static final double M = 0.1;          // 滑块质量 kg
-    private static final double G = 9.81;         // 重力加速度 m/s²
-    private static final double THETA_RAD = Math.toRadians(30); // 斜面倾角 → 弧度
-    private static final double B = 0.5;          // 磁感应强度 T
-    private static final double D = 0.01;         // 垫板厚度 m
-    private static final double A = 0.001;        // 有效接触面积 m²
+    // ========== 实验装置物理常量（标准国际单位） ==========
+    // 更新：v2.3.2 — 匹配新三阶段物理模型参数
+    private static final double M = 0.03;           // 滑块质量 kg
+    private static final double G = 9.81;           // 重力加速度 m/s²
+    private static final double B = 0.5;            // 磁感应强度 T
+    private static final double D = 0.02;           // 垫板厚度 m
+    private static final double A = 2e-5;           // 有效接触面积 m² (2×10⁻⁵)
 
-    // 金属材质标准数据库（电导率 σ，单位 S/m）
+    // ========== 金属材质标准数据库（电导率 σ，单位 S/m） ==========
     private static final MetalEntry[] METALS = {
-        new MetalEntry("银 (Silver)",   6.30e7),
-        new MetalEntry("铜 (Copper)",   5.96e7),
-        new MetalEntry("铝 (Aluminum)", 3.77e7),
-        new MetalEntry("铁 (Iron)",     1.00e7),
-        new MetalEntry("不锈钢 (Stainless Steel)", 1.45e6),
+            new MetalEntry("银 (Silver)", 6.30e7),
+            new MetalEntry("铜 (Copper)", 5.96e7),
+            new MetalEntry("铝 (Aluminum)", 3.50e7),
+            new MetalEntry("铁 (Iron)", 1.03e7),
+            new MetalEntry("镍 (Nickel)", 1.43e7),
+            new MetalEntry("锌 (Zinc)", 1.69e7),
+            new MetalEntry("锡 (Tin)", 8.69e6),
+            new MetalEntry("铅 (Lead)", 4.55e6),
+            new MetalEntry("不锈钢 304 (SS304)", 1.45e6),
     };
 
     private record MetalEntry(String name, double sigma) {}
 
     /**
-     * Calculate conductivity sigma (S/m) from max stable velocity (mm/s) at given angle.
+     * 新物理模型：通过初始加速度 a₀ 和终端速度 v∞ 反推电导率
+     * 公式：σ = m·a₀ / (B²·d·A·v∞)
+     * 其中 a₀ = g·sinθ（释放瞬间加速度）
      */
     public static double calculateSigma(double vMaxMmPerSec, double angleDegrees) {
         double thetaRad = Math.toRadians(angleDegrees);
-        double vMax = vMaxMmPerSec / 1000.0;
-        double k = (M * G * Math.sin(thetaRad)) / vMax;
-        return k / (B * B * D * A);
+        double a0 = G * Math.sin(thetaRad);        // 初加速度 m/s²
+        double vMax = vMaxMmPerSec / 1000.0;       // 终端速度 → m/s
+        return (M * a0) / (B * B * D * A * vMax);
     }
 
     /**
@@ -55,7 +61,7 @@ public class ConductivityCalculator {
     }
 
     /**
-     * 返回科学计数法字符串，如 "5.96×10^7 S/m"
+     * 返回科学计数法字符串，如 "1.50×10⁶ S/m"
      */
     public static String formatSigma(double sigma) {
         int exp = (int) Math.floor(Math.log10(sigma));

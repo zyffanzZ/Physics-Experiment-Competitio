@@ -6,15 +6,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>物理实验助手 v2.3.2</title>
+    <title>物理实验助手 v2.3.3</title>
     <link rel="icon" type="image/png" href="images/logo.png">
-    <link rel="stylesheet" href="css/style.css?v=20250609">
+    <link href="css/style.css?v=20250614" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><img src="images/logo.png" class="site-logo" alt="logo">物理实验助手 v2.3.2</h1>
+            <h1><img alt="logo" class="site-logo" src="images/logo.png">物理实验助手 v2.3.3</h1>
             <div class="header-center-group">
                 <span class="device-status" id="deviceStatus">
                     <span class="status-dot" id="deviceDot"></span>
@@ -92,13 +92,13 @@
                                 <span class="chart-color-dot" style="background:#e67e22"></span>
                             </label>
                             <label class="chart-dropdown-item">
-                                <input type="checkbox" data-chart="displacement">
+                                <input checked data-chart="displacement" type="checkbox">
                                 <span class="check-box"></span>
                                 <span>位移-时间 (s-t)</span>
                                 <span class="chart-color-dot" style="background:#3498db"></span>
                             </label>
                             <label class="chart-dropdown-item">
-                                <input type="checkbox" data-chart="velocity">
+                                <input checked data-chart="velocity" type="checkbox">
                                 <span class="check-box"></span>
                                 <span>速度-时间 (v-t)</span>
                                 <span class="chart-color-dot" style="background:#2ecc71"></span>
@@ -155,28 +155,34 @@
                         <span class="data-value" id="accelerationValue">0.00</span>
                     </div>
                 </div>
-                
-                <!-- Dynamic charts container -->
+
+                <!-- Dynamic charts container — two-row layout -->
                 <div class="charts-container" id="mainVizContent">
-                    <div class="chart-item chart-item-displacement">
-                        <canvas id="displacementChart"></canvas>
-                        <p class="chart-label">位移-时间</p>
+                    <!-- Row 1: 运动学三图 (s-t, v-t, a-t) -->
+                    <div class="charts-row charts-row-top">
+                        <div class="chart-item chart-item-displacement">
+                            <canvas id="displacementChart"></canvas>
+                            <p class="chart-label">位移-时间</p>
+                        </div>
+                        <div class="chart-item chart-item-velocity">
+                            <canvas id="velocityChart"></canvas>
+                            <p class="chart-label">速度-时间</p>
+                        </div>
+                        <div class="chart-item chart-item-acceleration">
+                            <canvas id="accelerationChart"></canvas>
+                            <p class="chart-label">加速度-时间</p>
+                        </div>
                     </div>
-                    <div class="chart-item chart-item-velocity">
-                        <canvas id="velocityChart"></canvas>
-                        <p class="chart-label">速度-时间</p>
-                    </div>
-                    <div class="chart-item chart-item-acceleration">
-                        <canvas id="accelerationChart"></canvas>
-                        <p class="chart-label">加速度-时间</p>
-                    </div>
-                    <div class="chart-item chart-item-energy energy-chart">
-                        <canvas id="energyPieChart"></canvas>
-                        <p class="chart-label">能量分布（重力势能 · 动能 · 内能）</p>
-                    </div>
-                    <div class="chart-item chart-item-energybar energy-chart">
-                        <canvas id="energyBarChart"></canvas>
-                        <p class="chart-label">势能 vs 动能（焦耳）</p>
+                    <!-- Row 2: 能量图 -->
+                    <div class="charts-row charts-row-bottom">
+                        <div class="chart-item chart-item-energy energy-chart">
+                            <canvas id="energyPieChart"></canvas>
+                            <p class="chart-label">能量分布（重力势能 · 动能 · 内能）</p>
+                        </div>
+                        <div class="chart-item chart-item-energybar energy-chart">
+                            <canvas id="energyBarChart"></canvas>
+                            <p class="chart-label">势能 vs 动能（焦耳）</p>
+                        </div>
                     </div>
                 </div>
 
@@ -332,6 +338,20 @@
                     <button class="modal-close" id="changelogClose">&times;</button>
                 </div>
                 <div class="modal-body">
+                    <div class="changelog-entry v233">
+                        <h3>v2.3.3 — 2026-06-14</h3>
+                        <ul>
+                            <li>🔄 <strong>模拟引擎重构</strong>：从摩擦系数模型改为三阶段物理模型（加速减弱→匀速→刹车），配合中点
+                                Euler 积分消除累积误差
+                            </li>
+                            <li>🔬 <strong>电导率公式升级</strong>：σ = m·a₀ / (B²·d·A·v∞)，物参修正匹配真实装置，金属数据库从
+                                5 种扩展至 9 种
+                            </li>
+                            <li>📊 <strong>图表区优化</strong>：两排网格布局，5 图表默认全部展示，响应式适配</li>
+                            <li>🎨 <strong>页面布局优化</strong>：快捷按钮 2×2 对齐，聊天输入框吸附视口底部，暗色模式适配
+                            </li>
+                        </ul>
+                    </div>
                     <div class="changelog-entry v232">
                         <h3>v2.3.2 — 2026-06-09</h3>
                         <ul>

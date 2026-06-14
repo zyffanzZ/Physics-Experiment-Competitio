@@ -6,9 +6,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let accelerationData = [];
     const MAX_DATA_POINTS = 50;
 
-    const MASS = 0.1;
+    const MASS = 0.03;
     const G = 9.81;
-    const LENGTH = 0.5;
+    const LENGTH = 2.0;
     const THETA = Math.PI / 6;
 
     function calcEnergy(dispMm, velMm_s) {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const chartDefs = {
         displacement: {
-            canvasId: 'displacementChart', itemClass: 'chart-item-displacement', visible: false,
+            canvasId: 'displacementChart', itemClass: 'chart-item-displacement', visible: true,
             create: function(ctx) {
                 return new Chart(ctx, {
                     type: 'line',
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         },
         velocity: {
-            canvasId: 'velocityChart', itemClass: 'chart-item-velocity', visible: false,
+            canvasId: 'velocityChart', itemClass: 'chart-item-velocity', visible: true,
             create: function(ctx) {
                 return new Chart(ctx, {
                     type: 'line',
@@ -60,7 +60,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return new Chart(ctx, {
                     type: 'pie',
                     data: { labels: ['重力势能', '动能', '内能'], datasets: [{ data: [100, 0, 0], backgroundColor: ['#f39c12', '#2ecc71', '#9b59b6'] }] },
-                    options: { responsive: true, maintainAspectRatio: false, animation: { animateScale: true, animateRotate: true }, plugins: { legend: { display: true, position: 'bottom' } } }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: {legend: {display: true, position: 'bottom'}}
+                    }
                 });
             }
         },

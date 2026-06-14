@@ -182,18 +182,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     '\u3010\u6a21\u62df\u5b9e\u9a8c\u7ed3\u9898\u62a5\u544a\u3011\n\n' +
                     '\u5b9e\u9a8c\u53c2\u6570\uff1a\n' +
                     '- \u659c\u9762\u89d2\u5ea6\uff1a' + angle + '\u00b0\n' +
-                    '- \u6469\u64e6\u7cfb\u6570 \u03bc\uff1a0.55\uff08\u6a21\u62df\u8bbe\u5b9a\uff09\n' +
                     '- \u6ed1\u5757\u8d28\u91cf\uff1a30g\n' +
                     '- \u8f68\u9053\u957f\u5ea6\uff1a2000mm\n\n' +
                     '\u5b9e\u9a8c\u7ed3\u679c\uff1a\n' +
                     '- \u603b\u4f4d\u79fb\uff1a2000.00mm\n' +
-                    '- \u603b\u65f6\u95f4\uff1a4.63s\n' +
-                    '- \u6700\u5927\u901f\u5ea6\uff1a150.00mm/s\n' +
-                    '- \u52a0\u901f\u5ea6\uff1a33.5mm/s\u00b2\n\n' +
+                    '- \u603b\u65f6\u95f4\uff1a2.30s\n' +
+                    '- \u7ec8\u7aef\u901f\u5ea6\uff1a981.00mm/s\n' +
+                    '- \u5e73\u5747\u52a0\u901f\u5ea6\uff1a436.00mm/s\u00b2\n\n' +
                     '\u7535\u5bfc\u7387\u63a8\u5bfc\uff1a\n' +
-                    '\u6839\u636e\u7535\u78c1\u963b\u5c3c\u516c\u5f0f v_max = (mg sin\u03b8) / (k/B\u00b2dA)\uff0c\n' +
-                    '\u53cd\u63a8\u5f97\u7535\u5bfc\u7387 \u03c3 \u2248 5.8 \u00d7 10\u2076 S/m\uff0c\n' +
-                    '\u5bf9\u5e94\u91d1\u5c5e\u6750\u8d28\u4e3a\uff1a\u94dd\uff08Aluminum\uff09\n\n' +
+                    '\u03c3 = m\u00b7a\u2080 / (B\u00b2\u00b7d\u00b7A\u00b7v\u221e)\n' +
+                    '\u03c3 \u2248 1.50\u00d710\u2076 S/m \u2192 \u4e0d\u9508\u94a2 304\n\n' +
                     '\u6ce8\uff1a\u672c\u62a5\u544a\u57fa\u4e8e\u6807\u51c6\u6a21\u62df\u6570\u636e\u751f\u6210\uff0c\u4ec5\u7528\u4e8e\u529f\u80fd\u6f14\u793a\u3002\u5b9e\u9645\u5b9e\u9a8c\u8bf7\u4f7f\u7528\u771f\u5b9e\u4f20\u611f\u5668\u6570\u636e\u3002\n\n' +
                     '\u5982\u679c\u60a8\u9700\u8981\u5c06\u8fd9\u4efd\u62a5\u544a\u4fdd\u5b58\u5230\u90ae\u7bb1\uff0c\u8bf7\u5728\u4e0b\u65b9\u5bf9\u8bdd\u6846\u4e2d\u76f4\u63a5\u8f93\u5165\u60a8\u7684\u90ae\u7bb1\u5730\u5740\uff0c\u7cfb\u7edf\u5c06\u81ea\u52a8\u4e3a\u60a8\u53d1\u9001\u3002';
                 addMessage(simReport, false);
@@ -209,7 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Email detected → send report via mail API
         if (isEmail(message)) {
-            if (!lastAiResponse) {
+            const reportToSend = lastAiResponse || window._lastAiResponse || '';
+            if (!reportToSend) {
                 addMessage('\u5f53\u524d\u6ca1\u6709\u53ef\u53d1\u9001\u7684\u7ed3\u9898\u62a5\u544a\uff0c\u8bf7\u5148\u751f\u6210\u62a5\u544a\u3002', false);
                 return;
             }
@@ -217,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.sendMail) {
                 // Strip the web-only mail hint before sending email
                 const mailHintPattern = /\u5982\u679c\u60a8\u9700\u8981\u5c06\u8fd9\u4efd\u62a5\u544a\u4fdd\u5b58\u5230\u90ae\u7bb1.*\u7cfb\u7edf\u5c06\u81ea\u52a8\u4e3a\u60a8\u53d1\u9001\u3002/;
-                const emailContent = lastAiResponse.replace(mailHintPattern, '').trim();
+                const emailContent = reportToSend.replace(mailHintPattern, '').trim();
                 window.sendMail(message, emailContent)
                     .then(data => {
                         removeTypingIndicator();
