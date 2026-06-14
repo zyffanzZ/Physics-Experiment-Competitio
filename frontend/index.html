@@ -6,15 +6,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>物理实验助手 v2.3.4</title>
+    <title>物理实验助手 v2.3.5</title>
     <link rel="icon" type="image/png" href="images/logo.png">
-    <link href="css/style.css?v=20250614b" rel="stylesheet">
+    <link href="css/style.css?v=20250614c" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><img alt="logo" class="site-logo" src="images/logo.png">物理实验助手 v2.3.4</h1>
+            <h1><img alt="logo" class="site-logo" src="images/logo.png">物理实验助手 v2.3.5</h1>
             <div class="header-center-group">
                 <span class="device-status" id="deviceStatus">
                     <span class="status-dot" id="deviceDot"></span>
@@ -114,45 +114,66 @@
                     <span class="hint-arrow">↓</span>
                 </div>
 
-                <!-- Start experiment button -->
-                <div class="control-panel">
-                    <label class="angle-selector">
-                        <span>斜面角度：</span>
-                        <select id="angleSelect">
-                            <option value="15">15°</option>
-                            <option value="20">20°</option>
-                            <option value="25">25°</option>
-                            <option value="30" selected>30°</option>
-                            <option value="35">35°</option>
-                            <option value="40">40°</option>
-                            <option value="45">45°</option>
-                        </select>
-                    </label>
-                    <button id="startExperimentBtn">开始实验</button>
-                    <button id="stopExperimentBtn" disabled>停止实验</button>
-                    <button id="simulateDataBtn">使用标准数据模拟</button>
-                    <button id="clearDataBtn">清空数据</button>
-                    <button id="viewMetalBtn" class="metal-info-btn">🔍 金属性质</button>
-                    <button id="exportExcelBtn" class="export-btn">📥 导出Excel</button>
-                </div>
-                
-                <!-- Real-time displacement and time display -->
-                <div class="real-time-data">
-                    <div class="data-item">
-                        <span class="data-label">位移 (mm):</span>
-                        <span class="data-value" id="displacementValue">0.00</span>
+                <!-- Split Layout: Animation (Left) + Data (Right) -->
+                <div class="viz-split-layout">
+
+                    <!-- LEFT: Incline Plane Animation -->
+                    <div class="animation-area" id="animationArea">
+                        <div class="animation-header">
+                            <h3>📐 斜面滑块模拟</h3>
+                            <span class="animation-angle-badge" id="animationAngleBadge">θ = 30°</span>
+                        </div>
+                        <canvas id="inclineCanvas"></canvas>
+                        <div class="animation-legend">
+                            <div class="legend-item"><span class="legend-dot dot-block"></span>滑块</div>
+                            <div class="legend-item"><span class="legend-dot dot-slope"></span>斜面轨道</div>
+                            <div class="legend-item"><span class="legend-dot dot-vel"></span>速度矢量</div>
+                        </div>
                     </div>
-                    <div class="data-item">
-                        <span class="data-label">时间 (s):</span>
-                        <span class="data-value" id="timeValue">0.00</span>
-                    </div>
-                    <div class="data-item">
-                        <span class="data-label">速度 (mm/s):</span>
-                        <span class="data-value" id="velocityValue">0.00</span>
-                    </div>
-                    <div class="data-item">
-                        <span class="data-label">加速度 (mm/s²):</span>
-                        <span class="data-value" id="accelerationValue">0.00</span>
+
+                    <!-- RIGHT: Controls + Data Cards -->
+                    <div class="viz-right-col">
+                        <!-- Start experiment button -->
+                        <div class="control-panel">
+                            <label class="angle-selector">
+                                <span>斜面角度：</span>
+                                <select id="angleSelect">
+                                    <option value="15">15°</option>
+                                    <option value="20">20°</option>
+                                    <option value="25">25°</option>
+                                    <option value="30" selected>30°</option>
+                                    <option value="35">35°</option>
+                                    <option value="40">40°</option>
+                                    <option value="45">45°</option>
+                                </select>
+                            </label>
+                            <button id="startExperimentBtn">开始实验</button>
+                            <button id="stopExperimentBtn" disabled>停止实验</button>
+                            <button id="simulateDataBtn">使用标准数据模拟</button>
+                            <button id="clearDataBtn">清空数据</button>
+                            <button id="viewMetalBtn" class="metal-info-btn">🔍 金属性质</button>
+                            <button id="exportExcelBtn" class="export-btn">📥 导出Excel</button>
+                        </div>
+
+                        <!-- Real-time displacement and time display -->
+                        <div class="real-time-data">
+                            <div class="data-item">
+                                <span class="data-label">位移 (mm):</span>
+                                <span class="data-value" id="displacementValue">0.00</span>
+                            </div>
+                            <div class="data-item">
+                                <span class="data-label">时间 (s):</span>
+                                <span class="data-value" id="timeValue">0.00</span>
+                            </div>
+                            <div class="data-item">
+                                <span class="data-label">速度 (mm/s):</span>
+                                <span class="data-value" id="velocityValue">0.00</span>
+                            </div>
+                            <div class="data-item">
+                                <span class="data-label">加速度 (mm/s²):</span>
+                                <span class="data-value" id="accelerationValue">0.00</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -291,7 +312,7 @@
         
         <footer>
             <div class="footer-info">
-                <p>物理实验助手 v2.3.4 | 使用 DeepSeek AI 和 ESP8266 物联网技术</p>
+                <p>物理实验助手 v2.3.5 | 使用 DeepSeek AI 和 ESP8266 物联网技术</p>
                 <p>通过 cpolar 内网穿透工具提供远程访问</p>
             </div>
         </footer>
@@ -351,6 +372,17 @@
                     <button class="modal-close" id="changelogClose">&times;</button>
                 </div>
                 <div class="modal-body">
+                    <div class="changelog-entry v235">
+                        <h3>v2.3.5 — 2026-06-14</h3>
+                        <ul>
+                            <li>📐 <strong>斜面滑块动画</strong>：新增 Canvas 实时斜面模拟，小金属块根据实验数据实时滑动</li>
+                            <li>🎯 <strong>数据实时同步</strong>：滑块位置、速度矢量、位移标注与传感器数据精准同步</li>
+                            <li>🖼️ <strong>左右分栏布局</strong>：左侧动画区 + 右侧数据面板，实验过程更加直观</li>
+                            <li>📱 <strong>移动端适配</strong>：动画区域在小屏幕上自动纵向排列，触屏体验良好</li>
+                            <li>🌙 <strong>深色模式</strong>：动画画布完美适配深色/浅色主题切换</li>
+                            <li>🎨 <strong>视觉增强</strong>：角度弧线标注、速度矢量箭头、地面纹理等细节渲染</li>
+                        </ul>
+                    </div>
                     <div class="changelog-entry v234">
                         <h3>v2.3.4 — 2026-06-14</h3>
                         <ul>
@@ -465,8 +497,9 @@
         </div>
     </div>
     
-    <script src="js/main.js?v=20250614b"></script>
-    <script src="js/charts.js?v=20250614b"></script>
-    <script src="js/api.js?v=20250614b"></script>
+    <script src="js/main.js?v=20250614c"></script>
+    <script src="js/incline-animation.js?v=20250614c"></script>
+    <script src="js/charts.js?v=20250614c"></script>
+    <script src="js/api.js?v=20250614c"></script>
 </body>
 </html>

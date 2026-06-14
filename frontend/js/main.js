@@ -414,8 +414,11 @@ document.addEventListener('DOMContentLoaded', function() {
         angleSelect.addEventListener('change', function() {
             const angle = this.value;
             if (window.setExperimentAngle) window.setExperimentAngle(angle);
+            if (window.inclineAnimation) window.inclineAnimation.setAngle(parseInt(angle));
             addMessage('\u659c\u9762\u89d2\u5ea6\u5df2\u8bbe\u7f6e\u4e3a ' + angle + '\u00b0', false);
         });
+        // Set initial angle on animation
+        if (window.inclineAnimation) window.inclineAnimation.setAngle(parseInt(angleSelect.value));
     }
 
     // 3.5 Chart Tab Switching
@@ -446,6 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const simHintBanner = document.getElementById('simHintBanner');
     const realTimeData = document.querySelector('.real-time-data');
     const controlPanel = document.querySelector('.control-panel');
+    const vizSplitLayout = document.querySelector('.viz-split-layout');
 
     function showMetalsPanel() {
         if (metalsInfoPanel) metalsInfoPanel.classList.add('active');
@@ -453,6 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (simHintBanner) simHintBanner.style.display = 'none';
         if (realTimeData) realTimeData.style.display = 'none';
         if (controlPanel) controlPanel.style.display = 'none';
+        if (vizSplitLayout) vizSplitLayout.style.display = 'none';
     }
 
     function showMainPanel() {
@@ -461,6 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (simHintBanner) simHintBanner.style.display = '';
         if (realTimeData) realTimeData.style.display = '';
         if (controlPanel) controlPanel.style.display = '';
+        if (vizSplitLayout) vizSplitLayout.style.display = '';
     }
 
     if (viewMetalBtn) {

@@ -746,6 +746,96 @@ body.is-resizing .panel-resizer {
 }
 
 /* ============ Real-time Data Cards ============ */
+.viz-split-layout {
+    display: flex;
+    gap: 16px;
+    margin: 0 28px 16px;
+    align-items: stretch;
+}
+
+/* LEFT: Incline Plane Animation */
+.animation-area {
+    flex: 0 0 320px;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.animation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #fafbff, #f8fafc);
+}
+
+.animation-header h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.animation-angle-badge {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--blue-dark);
+    background: var(--blue-light);
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.3px;
+}
+
+#inclineCanvas {
+    width: 100% !important;
+    height: 260px !important;
+    display: block;
+    cursor: crosshair;
+}
+
+.animation-legend {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    padding: 8px 12px 12px;
+    border-top: 1px solid var(--border);
+    background: #fafbfc;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+.dot-block { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+.dot-slope { background: linear-gradient(135deg, #94a3b8, #64748b); }
+.dot-vel { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+/* RIGHT: Controls + Data */
+.viz-right-col {
+    flex: 1 1 0;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .real-time-data {
     display: flex;
     justify-content: space-around;
@@ -1102,6 +1192,26 @@ footer p:last-child {
         font-size: 1.2rem;
     }
 
+    /* Animation area + data split → stack vertically on mobile */
+    .viz-split-layout {
+        flex-direction: column;
+        margin: 0 12px 12px;
+        gap: 10px;
+    }
+
+    .animation-area {
+        flex: 0 0 auto;
+        min-width: 100%;
+    }
+
+    #inclineCanvas {
+        height: 200px !important;
+    }
+
+    .viz-right-col {
+        min-width: 100%;
+    }
+
     /* Charts → stack into vertical 1-column layout on mobile */
     .charts-container {
         padding: 6px 8px 14px;
@@ -1344,6 +1454,29 @@ footer p:last-child {
     }
     .data-value {
         font-size: 1.1rem;
+    }
+
+    /* Animation area on very narrow screens */
+    .viz-split-layout {
+        margin: 0 8px 8px;
+        gap: 6px;
+    }
+
+    .animation-area {
+        min-width: 100%;
+    }
+
+    #inclineCanvas {
+        height: 170px !important;
+    }
+
+    .animation-header h3 {
+        font-size: 0.82rem;
+    }
+
+    .animation-legend {
+        padding: 6px 8px 10px;
+        gap: 10px;
     }
 
     /* Charts: stack vertically on very narrow screens */
@@ -1836,6 +1969,9 @@ footer p:last-child {
 .changelog-entry.v234 h3 {
     color: #0ea5e9;
 }
+.changelog-entry.v235 h3 {
+    color: #2563eb;
+}
 .changelog-entry ul {
     list-style: none;
     padding: 0;
@@ -2299,6 +2435,20 @@ footer p:last-child {
 [data-theme="dark"] .data-item {
     background: #1e293b;
     border-color: var(--border);
+}
+
+/* Dark mode: animation area */
+[data-theme="dark"] .animation-area {
+    background: #1e293b;
+    border-color: var(--border);
+}
+[data-theme="dark"] .animation-header {
+    background: linear-gradient(180deg, #1e293b, #0f172a);
+    border-bottom-color: var(--border);
+}
+[data-theme="dark"] .animation-legend {
+    background: #0f172a;
+    border-top-color: var(--border);
 }
 
 [data-theme="dark"] .control-panel {

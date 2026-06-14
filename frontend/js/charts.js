@@ -170,6 +170,16 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('velocityValue').textContent = parseFloat(velocity).toFixed(2);
         document.getElementById('accelerationValue').textContent = parseFloat(acceleration).toFixed(2);
 
+        // Sync to incline plane animation
+        if (window.inclineAnimation) {
+            window.inclineAnimation.setData(
+                parseFloat(displacement),
+                parseFloat(time),
+                parseFloat(velocity),
+                parseFloat(acceleration)
+            );
+        }
+
         // Compute energy from physical formula and update charts
         const energy = calcEnergy(displacement, velocity);
         if (charts.energy) {
@@ -208,6 +218,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('timeValue').textContent = '0.00';
         document.getElementById('velocityValue').textContent = '0.00';
         document.getElementById('accelerationValue').textContent = '0.00';
+
+        // Reset incline animation
+        if (window.inclineAnimation) window.inclineAnimation.reset();
     }
 
     window.initCharts = initCharts;
