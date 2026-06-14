@@ -200,38 +200,6 @@
         }
         ctx.globalAlpha = 1;
 
-        // === VERTICAL HEIGHT MARKER (dashed at pivot side) ===
-        const vertBaseX = pivotX - 14;
-        const vertBaseY = groundY;
-        ctx.setLineDash([3, 4]);
-        ctx.strokeStyle = c.muted;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(vertBaseX, pivotY);
-        ctx.lineTo(vertBaseX, vertBaseY);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        // Small arrows on vertical line
-        ctx.fillStyle = c.muted;
-        ctx.beginPath();
-        ctx.moveTo(vertBaseX, pivotY + 6);
-        ctx.lineTo(vertBaseX - 4, pivotY + 1);
-        ctx.lineTo(vertBaseX + 4, pivotY + 1);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(vertBaseX, vertBaseY - 6);
-        ctx.lineTo(vertBaseX - 4, vertBaseY - 1);
-        ctx.lineTo(vertBaseX + 4, vertBaseY - 1);
-        ctx.fill();
-
-        // Height label
-        const hMm = Math.round(pivotY + slopeLen * sinA - pivotY);  // vertical drop
-        ctx.font = '9px "Courier New", monospace';
-        ctx.fillStyle = c.muted;
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('\u2195 h=' + Math.round(maxDrop) + 'px', vertBaseX - 6, (pivotY + vertBaseY) / 2);
-
         // === SLOPE BODY ===
         const sGrad = ctx.createLinearGradient(p1.x, p1.y, p3.x, p3.y);
         sGrad.addColorStop(0, c.slopeFace);
@@ -272,46 +240,9 @@
             ctx.stroke();
         }
 
-        // === SUPPORT PILLAR ===
-        // Thin column from near bottom-right of slope down to ground
-        const pillarTopX = p3.x - 10;
-        const pillarTopY = p3.y - 4;
-        const pillarBotX = pillarTopX + perpX * 4;
-        const pillarBotY = groundY;
-
-        const pGrad = ctx.createLinearGradient(pillarTopX, 0, pillarBotX, 0);
-        pGrad.addColorStop(0, c.slopeFace);
-        pGrad.addColorStop(1, c.pillarS);
-        ctx.fillStyle = pGrad;
-        ctx.beginPath();
-        ctx.moveTo(pillarTopX - 3, pillarTopY);
-        ctx.lineTo(pillarTopX + 3, pillarTopY);
-        ctx.lineTo(pillarBotX + 2, pillarBotY);
-        ctx.lineTo(pillarBotX - 2, pillarBotY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = c.pillarS;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // === STOPPER at bottom ===
-        const stopW = 8;
-        const stopH = 14;
-
         // Normal vector pointing UP from slope surface
         const nx = -sinA;
         const ny = cosA;
-
-        ctx.save();
-        ctx.translate(endX - 4 * cosA + nx * (stopH / 2), endY - 4 * sinA + ny * (stopH / 2));
-        ctx.rotate(ang);
-        ctx.fillStyle = c.stopper;
-        ctx.strokeStyle = c.blockEdge;
-        ctx.lineWidth = 1.2;
-        roundRect(-stopW / 2, -stopH / 2, stopW, stopH, 3);
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
 
         // === ANGLE ARC ===
         const arcR = 34;
@@ -509,25 +440,6 @@
             }
         }
 
-        // === RULER MARKS ===
-        ctx.strokeStyle = c.muted;
-        ctx.font = '7.5px "Courier New", monospace';
-        ctx.fillStyle = c.muted;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-        for (let i = 0; i <= 10; i++) {
-            const t = i / 10;
-            const rx = p1.x + t * (p2.x - p1.x) + perpX * slopeThick * 0.55;
-            const ry = p1.y + t * (p2.y - p1.y) + perpY * slopeThick * 0.55;
-            ctx.beginPath();
-            ctx.moveTo(rx, ry);
-            ctx.lineTo(rx + perpX * 4, ry + perpY * 4);
-            ctx.stroke();
-            if (i % 2 === 0) {
-                ctx.fillText(Math.round(t * maxDisplacement), rx + perpX * 6, ry + perpY * 6);
-            }
-        }
-
         // === TOP-RIGHT INFO ===
         ctx.font = '9.5px -apple-system, "Segoe UI", "PingFang SC", sans-serif';
         ctx.fillStyle = c.muted;
@@ -539,11 +451,11 @@
         );
 
         // === BOTTOM-LABEL ===
-        ctx.font = '8px "Courier New", monospace';
+        ctx.font = '8px -apple-system, "Segoe UI", sans-serif';
         ctx.fillStyle = c.muted;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        ctx.fillText(maxDisplacement + ' mm', p3.x + 4, p3.y);
+        ctx.fillText('轨道总长 ' + maxDisplacement + ' mm', p3.x + 4, p3.y);
     }
 
     // ========== Animation Loop ==========
