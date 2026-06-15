@@ -114,6 +114,28 @@
                     <span class="hint-arrow">↓</span>
                 </div>
 
+                <!-- 全宽控制按钮栏 -->
+                <div class="control-panel">
+                    <label class="angle-selector">
+                        <span>斜面角度：</span>
+                        <select id="angleSelect">
+                            <option value="15">15°</option>
+                            <option value="20">20°</option>
+                            <option value="25">25°</option>
+                            <option value="30" selected>30°</option>
+                            <option value="35">35°</option>
+                            <option value="40">40°</option>
+                            <option value="45">45°</option>
+                        </select>
+                    </label>
+                    <button id="startExperimentBtn">开始实验</button>
+                    <button id="stopExperimentBtn" disabled>停止实验</button>
+                    <button id="simulateDataBtn">使用标准数据模拟</button>
+                    <button id="clearDataBtn">清空数据</button>
+                    <button id="viewMetalBtn" class="metal-info-btn">🔍 金属性质</button>
+                    <button id="exportExcelBtn" class="export-btn">📥 导出Excel</button>
+                </div>
+
                 <!-- Split Layout: Animation (Left) + Data (Right) -->
                 <div class="viz-split-layout">
 
@@ -122,40 +144,23 @@
                         <div class="animation-header">
                             <h3>📐 斜面滑块模拟</h3>
                             <span class="animation-angle-badge" id="animationAngleBadge">θ = 30°</span>
+                            <button id="forceAnalysisBtn" class="force-analysis-btn" title="显示/隐藏受力分析">🔬 受力分析</button>
                         </div>
                         <canvas id="inclineCanvas"></canvas>
                         <div class="animation-legend">
                             <div class="legend-item"><span class="legend-dot dot-block"></span>滑块</div>
                             <div class="legend-item"><span class="legend-dot dot-slope"></span>斜面轨道</div>
                             <div class="legend-item"><span class="legend-dot dot-vel"></span>速度矢量</div>
+                            <div class="legend-item force-legend" id="forceLegend" style="display:none;">
+                                <span class="force-pair"><span class="legend-dot dot-gravity"></span>G 重力</span>
+                                <span class="force-pair"><span class="legend-dot dot-normal"></span>Fn 支持力</span>
+                                <span class="force-pair"><span class="legend-dot dot-damping"></span>Fd 阻尼力</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- RIGHT: Controls + Data Cards -->
+                    <!-- RIGHT: Real-time data cards -->
                     <div class="viz-right-col">
-                        <!-- Start experiment button -->
-                        <div class="control-panel">
-                            <label class="angle-selector">
-                                <span>斜面角度：</span>
-                                <select id="angleSelect">
-                                    <option value="15">15°</option>
-                                    <option value="20">20°</option>
-                                    <option value="25">25°</option>
-                                    <option value="30" selected>30°</option>
-                                    <option value="35">35°</option>
-                                    <option value="40">40°</option>
-                                    <option value="45">45°</option>
-                                </select>
-                            </label>
-                            <button id="startExperimentBtn">开始实验</button>
-                            <button id="stopExperimentBtn" disabled>停止实验</button>
-                            <button id="simulateDataBtn">使用标准数据模拟</button>
-                            <button id="clearDataBtn">清空数据</button>
-                            <button id="viewMetalBtn" class="metal-info-btn">🔍 金属性质</button>
-                            <button id="exportExcelBtn" class="export-btn">📥 导出Excel</button>
-                        </div>
-
-                        <!-- Real-time displacement and time display -->
                         <div class="real-time-data">
                             <div class="data-item">
                                 <span class="data-label">位移 (mm):</span>
@@ -351,6 +356,19 @@
             </div>
         </div>
 
+        <!-- Animation Fullscreen Modal -->
+        <div class="modal-overlay" id="animFullscreenModal">
+            <div class="modal-content anim-fullscreen-content">
+                <div class="modal-header">
+                    <h2 id="animFullscreenTitle">📐 斜面滑块模拟</h2>
+                    <button class="modal-close" id="animFullscreenClose">&times;</button>
+                </div>
+                <div class="modal-body anim-fullscreen-body">
+                    <canvas id="animFullscreenCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
         <!-- Chart Fullscreen Modal -->
         <div class="modal-overlay" id="chartFullscreenModal">
             <div class="modal-content chart-fullscreen-content">
@@ -373,14 +391,14 @@
                 </div>
                 <div class="modal-body">
                     <div class="changelog-entry v235">
-                        <h3>v2.3.5 — 2026-06-14</h3>
+                        <h3>v2.3.5 — 2026-06-15</h3>
                         <ul>
-                            <li>📐 <strong>斜面滑块动画</strong>：新增 Canvas 实时斜面模拟，小金属块根据实验数据实时滑动</li>
-                            <li>🎯 <strong>数据实时同步</strong>：滑块位置、速度矢量、位移标注与传感器数据精准同步</li>
-                            <li>🖼️ <strong>左右分栏布局</strong>：左侧动画区 + 右侧数据面板，实验过程更加直观</li>
-                            <li>📱 <strong>移动端适配</strong>：动画区域在小屏幕上自动纵向排列，触屏体验良好</li>
-                            <li>🌙 <strong>深色模式</strong>：动画画布完美适配深色/浅色主题切换</li>
-                            <li>🎨 <strong>视觉增强</strong>：角度弧线标注、速度矢量箭头、地面纹理等细节渲染</li>
+                            <li>📐 <strong>动画面板布局优化</strong>：Canvas 画布铺满整个动画面板，斜面和滑块居中显示</li>
+                            <li>🔍 <strong>点击放大优化</strong>：提示文字移至右下角不遮挡按钮，全屏等比例适配不拉伸</li>
+                            <li>🖼️ <strong>全屏体验增强</strong>：放大后画布填满弹窗空间，无需上下翻页，画面清晰不变形</li>
+                            <li>🎯 <strong>内容居中微调</strong>：斜面/滑块垂直居中上移，底部地面线、图例完整可见不裁切</li>
+                            <li>💪 <strong>受力分析增强</strong>：Fn 支持力、Fd 阻尼力矢量标注清晰，图例色卡直观区分</li>
+                            <li>📱 <strong>移动端画布适配</strong>：响应式断点优化，小屏幕画布自动缩放</li>
                         </ul>
                     </div>
                     <div class="changelog-entry v234">

@@ -658,14 +658,14 @@ body.is-resizing .panel-resizer {
     50% { transform: translateY(4px); }
 }
 
-/* ============ Control Panel ============ */
+/* ============ Control Panel (Full-width button bar) ============ */
 .control-panel {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 14px;
-    margin: 12px 28px 20px;
-    padding: 16px 24px;
+    gap: 12px;
+    margin: 8px 28px 16px;
+    padding: 14px 24px;
     border-radius: var(--radius);
     background: var(--gray-light);
     border: 1px solid var(--border);
@@ -674,7 +674,6 @@ body.is-resizing .panel-resizer {
 
 .control-panel button {
     padding: 11px 24px;
-    border: none;
     border-radius: 50px;
     font-size: 0.86rem;
     font-weight: 600;
@@ -751,12 +750,15 @@ body.is-resizing .panel-resizer {
     gap: 16px;
     margin: 0 28px 16px;
     align-items: stretch;
+    flex: 1 1 0;
+    min-height: 260px;
 }
 
 /* LEFT: Incline Plane Animation */
 .animation-area {
-    flex: 0 0 320px;
+    flex: 0 0 380px;
     min-width: 280px;
+    max-width: 420px;
     display: flex;
     flex-direction: column;
     border-radius: var(--radius);
@@ -764,13 +766,35 @@ body.is-resizing .panel-resizer {
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
     overflow: hidden;
+    cursor: pointer;
+    position: relative;
+}
+
+.animation-area::after {
+    content: '🔍 点击放大';
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    background: rgba(255,255,255,0.85);
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    z-index: 5;
+}
+.animation-area:hover::after {
+    opacity: 1;
 }
 
 .animation-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 18px;
+    padding: 10px 14px;
     border-bottom: 1px solid var(--border);
     background: linear-gradient(180deg, #fafbff, #f8fafc);
 }
@@ -792,29 +816,48 @@ body.is-resizing .panel-resizer {
     letter-spacing: 0.3px;
 }
 
+.force-analysis-btn {
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    background: #ffffff;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.force-analysis-btn:hover { background: var(--blue-light); color: var(--blue-dark); border-color: var(--blue); }
+.force-analysis-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
 #inclineCanvas {
     width: 100% !important;
-    height: 260px !important;
+    flex: 1 1 0;
     display: block;
     cursor: crosshair;
 }
 
 .animation-legend {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 14px;
-    padding: 8px 12px 12px;
+    gap: 8px 14px;
+    padding: 6px 12px 8px;
     border-top: 1px solid var(--border);
     background: #fafbfc;
 }
 
 .legend-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 3px;
     font-size: 0.72rem;
     color: var(--text-muted);
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .legend-dot {
@@ -826,26 +869,41 @@ body.is-resizing .panel-resizer {
 .dot-block { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
 .dot-slope { background: linear-gradient(135deg, #94a3b8, #64748b); }
 .dot-vel { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.dot-gravity { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.dot-normal { background: linear-gradient(135deg, #10b981, #059669); }
+.dot-damping { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
-/* RIGHT: Controls + Data */
+.force-legend {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+}
+.force-pair {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+/* RIGHT: Data Cards only (animation is sibling) */
 .viz-right-col {
     flex: 1 1 0;
     min-width: 260px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
 }
 
 .real-time-data {
     display: flex;
     justify-content: space-around;
+    align-items: center;
     gap: 14px;
-    padding: 20px 28px 24px;
-    margin: 0 28px 20px;
+    padding: 24px 20px 28px;
     border-radius: var(--radius);
     background: var(--gray-light);
     border: 1px solid var(--border);
     flex-wrap: wrap;
+    height: 100%;
 }
 
 .data-item {
@@ -1182,7 +1240,6 @@ footer p:last-child {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
         padding: 12px 12px;
-        margin: 0 12px 14px;
     }
     .data-item {
         min-width: 0;
@@ -1205,7 +1262,8 @@ footer p:last-child {
     }
 
     #inclineCanvas {
-        height: 200px !important;
+        min-height: 160px;
+        max-height: 300px;
     }
 
     .viz-right-col {
@@ -1447,7 +1505,6 @@ footer p:last-child {
     .real-time-data {
         gap: 6px;
         padding: 10px 8px;
-        margin: 0 8px 10px;
     }
     .data-item {
         padding: 8px 6px;
@@ -1467,16 +1524,31 @@ footer p:last-child {
     }
 
     #inclineCanvas {
-        height: 170px !important;
+        min-height: 150px;
+        max-height: 260px;
     }
 
     .animation-header h3 {
         font-size: 0.82rem;
     }
 
+    .force-analysis-btn {
+        padding: 3px 9px;
+        font-size: 0.7rem;
+    }
+
+    .force-legend {
+        gap: 6px;
+        font-size: 0.65rem;
+    }
+    .force-legend .legend-dot {
+        width: 8px; height: 8px;
+    }
+
     .animation-legend {
         padding: 6px 8px 10px;
         gap: 10px;
+        flex-wrap: wrap;
     }
 
     /* Charts: stack vertically on very narrow screens */
@@ -2239,6 +2311,56 @@ footer p:last-child {
 }
 
 /* ==========================================
+   ANIMATION FULLSCREEN MODAL
+   ========================================== */
+.anim-fullscreen-content {
+    max-width: 90vw;
+    width: 90vw;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+}
+.anim-fullscreen-body {
+    padding: 12px 20px 20px;
+    flex: 1 1 auto;
+}
+.anim-fullscreen-body canvas {
+    display: block;
+    margin: 0 auto;
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+/* Dark mode */
+[data-theme="dark"] .anim-fullscreen-body canvas {
+    background: #1e293b;
+}
+[data-theme="dark"] .animation-area::after {
+    background: rgba(30,41,59,0.85);
+    border-color: var(--border);
+    color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+    .anim-fullscreen-content {
+        max-width: 96vw;
+        width: 96vw;
+        max-height: 92vh;
+    }
+    .anim-fullscreen-body {
+        padding: 10px 12px 18px;
+    }
+    .anim-fullscreen-body canvas {
+        max-height: 60vh;
+    }
+    .animation-area::after {
+        display: none;
+    }
+}
+
+/* ==========================================
    CHART FULLSCREEN MODAL
    ========================================== */
 .chart-item {
@@ -2450,6 +2572,13 @@ footer p:last-child {
     background: #0f172a;
     border-top-color: var(--border);
 }
+[data-theme="dark"] .force-analysis-btn {
+    background: #1e293b;
+    color: #cbd5e1;
+    border-color: #334155;
+}
+[data-theme="dark"] .force-analysis-btn:hover { background: #334155; color: #93c5fd; border-color: #3b82f6; }
+[data-theme="dark"] .force-analysis-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
 
 [data-theme="dark"] .control-panel {
     background: var(--gray-light);

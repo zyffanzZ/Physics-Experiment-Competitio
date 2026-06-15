@@ -15,6 +15,9 @@
     let maxDisplacement = 2000;    // mm — track length (fixed)
     let angleDeg = 30;
 
+    // Force analysis toggle
+    let showForceAnalysis = false;
+
     // Smooth interpolation (display values lag behind source data)
     let displayDisp = 0;
     let displayVel = 0;
@@ -129,6 +132,12 @@
         ctx.fillStyle = c.bg;
         ctx.fillRect(0, 0, W, H);
 
+        // --- Clip all content to canvas bounds (prevents arrow overflow) ---
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, W, H);
+        ctx.clip();
+
         // Subtle grid
         ctx.strokeStyle = c.grid;
         ctx.lineWidth = 0.4;
@@ -139,24 +148,23 @@
         const sinA = Math.sin(ang);
         const cosA = Math.cos(ang);
 
-        // === Layout: ground at bottom, slope touches ground ===
-        const groundY = H - 28;                   // ground line (near bottom)
+        // === Layout: compute slope geometry first, then center vertically ===
         const slopeThick = 20;                     // slope body thickness (px)
+        const groundH = 20;                         // ground strip height
 
-        // Pivot (top of ramp) — positioned so the top-left of ramp sits
-        // comfortably in the upper-left of canvas.
+        // Pivot (top-left of ramp surface) — start from top-left
         const pivotX = 60;
-        const pivotY = 42;
+        const pivotY = 30;
 
         // Maximum horizontal run available
         const maxRun = W - pivotX - 40;
-        // Maximum vertical drop to reach ground
-        const maxDrop = groundY - pivotY;
+        // Maximum vertical drop available
+        const maxDrop = H - groundH - pivotY - 10;
 
         // Slope length: use whichever is the limiting factor
         const slopeLen = Math.min(
-            maxRun / cosA - 4,           // fit horizontally
-            maxDrop / sinA - slopeThick * Math.abs(-cosA) / sinA  // touch ground
+            maxRun / cosA - 4,
+            maxDrop / sinA - slopeThick * Math.abs(-cosA) / sinA
         );
 
         // End point of slope surface
@@ -168,17 +176,30 @@
         const perpY = -cosA;
 
         // Four corners of slope trapezoid
-        const p1 = { x: pivotX, y: pivotY };                                       // top-left  (surface)
-        const p2 = { x: endX,   y: endY };                                         // top-right (surface)
-        const p3 = { x: endX   + perpX * slopeThick, y: endY   + perpY * slopeThick }; // bot-right
-        const p4 = { x: pivotX + perpX * slopeThick, y: pivotY + perpY * slopeThick }; // bot-left
+        const p1 = { x: pivotX, y: pivotY };
+        const p2 = { x: endX,   y: endY };
+        const p3 = { x: endX   + perpX * slopeThick, y: endY   + perpY * slopeThick };
+        const p4 = { x: pivotX + perpX * slopeThick, y: pivotY + perpY * slopeThick };
+
+        // === VERTICAL CENTERING (slightly biased upward) ===
+        // Bounding box of all visible elements
+        const contentTop    = Math.min(p1.y, p4.y);
+        const contentBottom = Math.max(p3.y, p2.y) + groundH;
+        const contentHeight = contentBottom - contentTop;
+        const vOffset = (H - contentHeight) / 2 - contentTop - 4;
+
+        ctx.save();
+        ctx.translate(0, vOffset);
+
+        // Recompute ground position after translation
+        const groundY = H - vOffset - groundH;
 
         // === GROUND ===
-        const gGrad = ctx.createLinearGradient(0, groundY, 0, groundY + 28);
+        const gGrad = ctx.createLinearGradient(0, groundY, 0, groundY + groundH);
         gGrad.addColorStop(0, c.groundT);
         gGrad.addColorStop(1, c.groundB);
         ctx.fillStyle = gGrad;
-        ctx.fillRect(0, groundY, W, 28);
+        ctx.fillRect(0, groundY, W, groundH);
         ctx.strokeStyle = c.slopeStroke;
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -348,6 +369,100 @@
 
         ctx.restore();
 
+        // === FORCE ANALYSIS VECTORS ===
+        if (showForceAnalysis) {
+            const fLenG = 50;     // gravity arrow length (px)
+            const fLenN = 38;     // normal force length
+            const fLenD = 30;     // damping force length
+
+            // Origin: block center (blkCx, blkCy)
+            const ox = blkCx;
+            const oy = blkCy;
+
+            // --- G: Gravity (straight down) ---
+            ctx.save();
+            // Glow
+            ctx.strokeStyle = 'rgba(139,92,246,0.25)';
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox, oy + fLenG); ctx.stroke();
+            // Arrow shaft
+            ctx.strokeStyle = '#7c3aed';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox, oy + fLenG); ctx.stroke();
+            // Arrowhead
+            ctx.fillStyle = '#7c3aed';
+            ctx.beginPath();
+            ctx.moveTo(ox, oy + fLenG);
+            ctx.lineTo(ox - 5, oy + fLenG - 9);
+            ctx.lineTo(ox + 5, oy + fLenG - 9);
+            ctx.closePath(); ctx.fill();
+            // Label
+            ctx.font = 'bold 11px "Courier New", monospace';
+            ctx.fillStyle = '#7c3aed';
+            ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+            ctx.fillText('G', ox + 8, oy + fLenG * 0.55);
+            ctx.restore();
+
+            // --- Fn: Normal force (perpendicular to slope, up/out) ---
+            ctx.save();
+            // Direction: perpendicular to slope surface, pointing AWAY from slope body (visually "up")
+            const fnDirX = -nx;   // opposite of nx,ny → points "up" relative to slope
+            const fnDirY = -ny;
+            const fnEndX = ox + fnDirX * fLenN;
+            const fnEndY = oy + fnDirY * fLenN;
+            // Glow
+            ctx.strokeStyle = 'rgba(16,185,129,0.25)';
+            ctx.lineWidth = 5; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(fnEndX, fnEndY); ctx.stroke();
+            // Shaft
+            ctx.strokeStyle = '#059669';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(fnEndX, fnEndY); ctx.stroke();
+            // Arrowhead
+            const fnAng = Math.atan2(fnDirY, fnDirX);
+            ctx.fillStyle = '#059669'; ctx.beginPath();
+            ctx.moveTo(fnEndX, fnEndY);
+            ctx.lineTo(fnEndX - 9 * Math.cos(fnAng - 0.45), fnEndY - 9 * Math.sin(fnAng - 0.45));
+            ctx.lineTo(fnEndX - 9 * Math.cos(fnAng + 0.45), fnEndY - 9 * Math.sin(fnAng + 0.45));
+            ctx.closePath(); ctx.fill();
+            // Label
+            ctx.font = 'bold 11px "Courier New", monospace';
+            ctx.fillStyle = '#059669';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+            ctx.fillText('Fn', fnEndX + fnDirX * 10, fnEndY + fnDirY * 10);
+            ctx.restore();
+
+            // --- Fd: Damping force (along slope, up / opposing motion) ---
+            ctx.save();
+            // Direction: up the slope = opposite of slide direction
+            const fdDirX = -cosA;
+            const fdDirY = -sinA;
+            const fdEndX = ox + fdDirX * fLenD;
+            const fdEndY = oy + fdDirY * fLenD;
+            // Glow
+            ctx.strokeStyle = 'rgba(245,158,11,0.25)';
+            ctx.lineWidth = 5; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(fdEndX, fdEndY); ctx.stroke();
+            // Shaft
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(fdEndX, fdEndY); ctx.stroke();
+            // Arrowhead
+            const fdAng = Math.atan2(fdDirY, fdDirX);
+            ctx.fillStyle = '#d97706'; ctx.beginPath();
+            ctx.moveTo(fdEndX, fdEndY);
+            ctx.lineTo(fdEndX - 8 * Math.cos(fdAng - 0.45), fdEndY - 8 * Math.sin(fdAng - 0.45));
+            ctx.lineTo(fdEndX - 8 * Math.cos(fdAng + 0.45), fdEndY - 8 * Math.sin(fdAng + 0.45));
+            ctx.closePath(); ctx.fill();
+            // Label
+            ctx.font = 'bold 11px "Courier New", monospace';
+            ctx.fillStyle = '#d97706';
+            ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            ctx.fillText('Fd', fdEndX + fdDirX * 10 - 4, fdEndY + fdDirY * 10);
+            ctx.restore();
+        }
+
         // === VELOCITY ARROW ===
         const velMag = Math.min(Math.abs(displayVel) * 0.055, 55);
         if (velMag > 5) {
@@ -456,6 +571,12 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText('轨道总长 ' + maxDisplacement + ' mm', p3.x + 4, p3.y);
+
+        // Restore vertical centering translation
+        ctx.restore();
+
+        // Restore clip region
+        ctx.restore();
     }
 
     // ========== Animation Loop ==========
@@ -533,6 +654,19 @@
         lastAcceptedDisp = -Infinity;
     }
 
+    function toggleForceAnalysis(force) {
+        if (typeof force === 'boolean') {
+            showForceAnalysis = force;
+        } else {
+            showForceAnalysis = !showForceAnalysis;
+        }
+        var btn = document.getElementById('forceAnalysisBtn');
+        var legend = document.getElementById('forceLegend');
+        if (btn) btn.classList.toggle('active', showForceAnalysis);
+        if (legend) legend.style.display = showForceAnalysis ? 'flex' : 'none';
+        return showForceAnalysis;
+    }
+
     // ========== Init ==========
     function resizeCanvas() {
         const rect = canvas.parentElement.getBoundingClientRect();
@@ -560,6 +694,13 @@
         setData: setData,
         setAngle: setAngle,
         reset: resetAnimation,
+        toggleForceAnalysis: toggleForceAnalysis,
     };
+
+    // Wire force analysis button
+    var faBtn = document.getElementById('forceAnalysisBtn');
+    if (faBtn) {
+        faBtn.addEventListener('click', function() { toggleForceAnalysis(); });
+    }
 
 })();

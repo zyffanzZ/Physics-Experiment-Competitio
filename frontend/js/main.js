@@ -917,6 +917,104 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ========== Animation Fullscreen Zoom ==========
+    var animFullscreenModal = document.getElementById('animFullscreenModal');
+    var animFullscreenClose = document.getElementById('animFullscreenClose');
+    var animFullscreenCanvas = document.getElementById('animFullscreenCanvas');
+    var animFullscreenRAF = null;
+    var animFullscreenTargetW = 0;
+    var animFullscreenTargetH = 0;
+
+    function openAnimFullscreen() {
+        var sourceCanvas = document.getElementById('inclineCanvas');
+        if (!sourceCanvas) return;
+
+        animFullscreenModal.classList.add('open');
+
+        // Wait for modal layout, then size canvas to fill body
+        requestAnimationFrame(function() {
+            if (!animFullscreenModal.classList.contains('open')) return;
+
+            var srcW = sourceCanvas.clientWidth;
+            var srcH = sourceCanvas.clientHeight;
+            var srcRatio = srcW / srcH;
+
+            var bodyEl = document.querySelector('.anim-fullscreen-body');
+            // Leave modest margin — body already has padding
+            var availW = bodyEl ? bodyEl.clientWidth - 16 : window.innerWidth * 0.88;
+            var availH = bodyEl ? bodyEl.clientHeight - 12 : window.innerHeight * 0.65;
+
+            // Fill available space preserving aspect ratio
+            var tw, th;
+            if (availW / availH > srcRatio) {
+                th = availH;
+                tw = th * srcRatio;
+            } else {
+                tw = availW;
+                th = tw / srcRatio;
+            }
+
+            animFullscreenTargetW = Math.round(tw);
+            animFullscreenTargetH = Math.round(th);
+            animFullscreenCanvas.style.width = animFullscreenTargetW + 'px';
+            animFullscreenCanvas.style.height = animFullscreenTargetH + 'px';
+
+            startMirrorLoop(sourceCanvas);
+        });
+    }
+
+    function startMirrorLoop(sourceCanvas) {
+        function mirrorFrame() {
+            if (!animFullscreenModal.classList.contains('open')) return;
+
+            var dpr = Math.min(window.devicePixelRatio || 1, 2);
+            var cw = animFullscreenTargetW;
+            var ch = animFullscreenTargetH;
+
+            if (animFullscreenCanvas.width !== cw * dpr || animFullscreenCanvas.height !== ch * dpr) {
+                animFullscreenCanvas.width = cw * dpr;
+                animFullscreenCanvas.height = ch * dpr;
+            }
+
+            var ctx = animFullscreenCanvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, cw, ch);
+            ctx.drawImage(sourceCanvas, 0, 0, cw, ch);
+
+            animFullscreenRAF = requestAnimationFrame(mirrorFrame);
+        }
+        mirrorFrame();
+    }
+
+    function closeAnimFullscreen() {
+        animFullscreenModal.classList.remove('open');
+        if (animFullscreenRAF) {
+            cancelAnimationFrame(animFullscreenRAF);
+            animFullscreenRAF = null;
+        }
+    }
+
+    // Bind click on animation area
+    var animationArea = document.getElementById('animationArea');
+    if (animationArea) {
+        animationArea.addEventListener('click', function(e) {
+            // Don't trigger if clicking the force analysis button
+            if (e.target.id === 'forceAnalysisBtn' || e.target.closest('#forceAnalysisBtn')) return;
+            // Don't trigger if clicking the angle badge or header buttons
+            if (e.target.closest('.animation-header button')) return;
+            openAnimFullscreen();
+        });
+    }
+
+    if (animFullscreenClose) {
+        animFullscreenClose.addEventListener('click', closeAnimFullscreen);
+    }
+    if (animFullscreenModal) {
+        animFullscreenModal.addEventListener('click', function(e) {
+            if (e.target === animFullscreenModal) closeAnimFullscreen();
+        });
+    }
+
     // Expose charts map for fullscreen access
     window.registerChartsMap = function(map) {
         window._chartsMap = map;
