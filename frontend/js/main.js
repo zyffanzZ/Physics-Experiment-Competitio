@@ -931,28 +931,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         animFullscreenModal.classList.add('open');
 
-        // Wait for modal layout, then size canvas to fill body
+        // Wait for modal layout, then size canvas
         requestAnimationFrame(function() {
             if (!animFullscreenModal.classList.contains('open')) return;
 
-            var srcW = sourceCanvas.clientWidth;
-            var srcH = sourceCanvas.clientHeight;
-            var srcRatio = srcW / srcH;
+            var srcRatio = 16 / 9;
 
-            var bodyEl = document.querySelector('.anim-fullscreen-body');
-            // Leave modest margin — body already has padding
-            var availW = bodyEl ? bodyEl.clientWidth - 16 : window.innerWidth * 0.88;
-            var availH = bodyEl ? bodyEl.clientHeight - 12 : window.innerHeight * 0.65;
-
-            // Fill available space preserving aspect ratio
-            var tw, th;
-            if (availW / availH > srcRatio) {
-                th = availH;
-                tw = th * srcRatio;
-            } else {
-                tw = availW;
-                th = tw / srcRatio;
-            }
+            // Use 80vw width, capped at 900px — matches CSS .anim-fullscreen-body canvas
+            var tw = Math.min(window.innerWidth * 0.8, 900);
+            var th = tw / srcRatio;
 
             animFullscreenTargetW = Math.round(tw);
             animFullscreenTargetH = Math.round(th);

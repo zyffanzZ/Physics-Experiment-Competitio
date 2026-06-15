@@ -838,6 +838,7 @@ body.is-resizing .panel-resizer {
     flex: 1 1 0;
     display: block;
     cursor: crosshair;
+    max-height: 220px;
 }
 
 .animation-legend {
@@ -2315,20 +2316,22 @@ footer p:last-child {
    ========================================== */
 .anim-fullscreen-content {
     max-width: 90vw;
-    width: 90vw;
-    max-height: 92vh;
+    width: auto;
     display: flex;
     flex-direction: column;
 }
 .anim-fullscreen-body {
-    padding: 12px 20px 20px;
-    flex: 1 1 auto;
+    padding: 12px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .anim-fullscreen-body canvas {
     display: block;
-    margin: 0 auto;
-    width: 100% !important;
-    height: auto !important;
+    width: 80vw;
+    max-width: 900px;
+    height: auto;
+    aspect-ratio: 16 / 9;
     border-radius: 12px;
     background: #f8fafc;
 }
@@ -2346,14 +2349,16 @@ footer p:last-child {
 @media (max-width: 768px) {
     .anim-fullscreen-content {
         max-width: 96vw;
-        width: 96vw;
+        width: auto;
         max-height: 92vh;
     }
     .anim-fullscreen-body {
-        padding: 10px 12px 18px;
+        padding: 10px 12px 14px;
     }
     .anim-fullscreen-body canvas {
-        max-height: 60vh;
+        width: 92vw;
+        aspect-ratio: 16 / 9;
+        object-fit: contain;
     }
     .animation-area::after {
         display: none;
