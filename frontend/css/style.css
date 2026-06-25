@@ -131,7 +131,7 @@ header h1 {
     gap: 12px;
     flex-shrink: 0;
     margin-left: auto;
-    margin-right: 40px;
+    margin-right: 24px;
 }
 
 .header-right-group {
@@ -790,6 +790,13 @@ body.is-resizing .panel-resizer {
     opacity: 1;
 }
 
+/* Touch devices: always show zoom hint */
+@media (hover: none) and (pointer: coarse) {
+    .animation-area::after {
+        opacity: 0.7;
+    }
+}
+
 .animation-header {
     display: flex;
     justify-content: space-between;
@@ -1045,6 +1052,85 @@ footer p:last-child {
     }
 }
 
+/* Intermediate breakpoint: header & control panel before full collapse */
+@media (max-width: 1100px) {
+    header {
+        padding: 18px 24px;
+        gap: 12px;
+    }
+
+    header h1 {
+        font-size: 1.4rem;
+        gap: 8px;
+    }
+
+    .site-logo {
+        width: 28px;
+        height: 28px;
+    }
+
+    .header-center-group {
+        margin-right: 0;
+        gap: 8px;
+    }
+
+    .header-right-group {
+        gap: 6px;
+    }
+
+    .device-status {
+        padding: 8px 16px;
+        font-size: 0.82rem;
+    }
+
+    .connect-btn,
+    .changelog-btn,
+    .admin-btn,
+    .feedback-btn {
+        padding: 9px 16px;
+        font-size: 0.8rem;
+    }
+
+    .theme-toggle-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+    /* Control panel: allow wrapping with smaller buttons */
+    .control-panel {
+        gap: 8px;
+        padding: 10px 16px;
+    }
+
+    .control-panel button {
+        padding: 9px 16px !important;
+        font-size: 0.8rem !important;
+    }
+
+    .angle-selector {
+        font-size: 0.8rem;
+    }
+
+    .angle-selector select {
+        font-size: 0.8rem;
+    }
+
+    /* Animation area reduce width */
+    .animation-area {
+        flex: 0 0 300px;
+        min-width: 240px;
+    }
+
+    #inclineCanvas {
+        max-height: 180px;
+    }
+
+    /* Data items reduce font */
+    .data-value {
+        font-size: 1.4rem;
+    }
+}
+
 @media (max-width: 1024px) {
     body { padding: 18px; }
     .two-panel-layout {
@@ -1254,7 +1340,9 @@ footer p:last-child {
     .viz-split-layout {
         flex-direction: column;
         margin: 0 12px 12px;
-        gap: 10px;
+        gap: 8px;
+        flex: 0 0 auto;
+        min-height: 0;
     }
 
     .animation-area {
@@ -1263,12 +1351,35 @@ footer p:last-child {
     }
 
     #inclineCanvas {
-        min-height: 160px;
-        max-height: 300px;
+        min-height: 140px;
+        max-height: 180px;
     }
 
     .viz-right-col {
         min-width: 100%;
+        flex: 0 0 auto;
+    }
+
+    .animation-legend {
+        gap: 4px 8px;
+        padding: 4px 8px 6px;
+    }
+
+    .animation-legend .legend-item {
+        font-size: 0.66rem;
+    }
+
+    /* Data cards: 2x2 grid on mobile */
+    .real-time-data {
+        gap: 8px;
+        padding: 12px 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .data-item {
+        min-width: 0;
+        padding: 10px 8px;
     }
 
     /* Charts → stack into vertical 1-column layout on mobile */
@@ -1505,7 +1616,8 @@ footer p:last-child {
 
     .real-time-data {
         gap: 6px;
-        padding: 10px 8px;
+        padding: 10px 6px;
+        grid-template-columns: 1fr 1fr;
     }
     .data-item {
         padding: 8px 6px;
@@ -1516,7 +1628,7 @@ footer p:last-child {
 
     /* Animation area on very narrow screens */
     .viz-split-layout {
-        margin: 0 8px 8px;
+        margin: 0 6px 8px;
         gap: 6px;
     }
 
@@ -1525,8 +1637,16 @@ footer p:last-child {
     }
 
     #inclineCanvas {
-        min-height: 150px;
-        max-height: 260px;
+        min-height: 130px;
+        max-height: 160px;
+    }
+
+    .animation-legend {
+        padding: 3px 6px 5px;
+    }
+
+    .animation-legend .legend-item {
+        font-size: 0.6rem;
     }
 
     .animation-header h3 {
@@ -2143,6 +2263,7 @@ footer p:last-child {
     overflow: hidden;
     cursor: pointer;
     user-select: none;
+    touch-action: manipulation;
 }
 .metal-card::after {
     content: '点击查看详情 →';
@@ -2156,6 +2277,16 @@ footer p:last-child {
 }
 .metal-card:hover::after {
     opacity: 0.7;
+}
+
+/* Touch devices: always show detail hint */
+@media (hover: none) and (pointer: coarse) {
+    .metal-card::after {
+        opacity: 0.6;
+        font-size: 0.65rem;
+        bottom: 8px;
+        right: 10px;
+    }
 }
 .metal-card::before {
     content: '';
@@ -2391,6 +2522,13 @@ footer p:last-child {
 
 .chart-item:hover::after {
     opacity: 1;
+}
+
+/* Touch devices: always show zoom hint on charts */
+@media (hover: none) and (pointer: coarse) {
+    .chart-item::after {
+        opacity: 0.7;
+    }
 }
 
 .chart-fullscreen-content {
