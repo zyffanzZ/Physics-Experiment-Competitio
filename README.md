@@ -128,6 +128,3 @@ mvn spring-boot:run
 
 项目支持 ESP8266 模块通过 WiFi 上报下滑位移测量数据。详细使用说明请参考 `物联网下滑位移测量系统_使用指南.docx`。
 
-## License
-
-HUAT License
